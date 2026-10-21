@@ -2,7 +2,7 @@
   "version": 1,
   "levels": [
     {
-      "id": "first_line", "title": "第一条轨道", "subtitle": "让一条直线，连接一次灵感。", "concept": "斜率与平移",
+      "id": "first_line", "title": "第一条轨道", "subtitle": "让一条直线，连接起点与终点。", "concept": "用斜率和位置控制直线",
       "objective": "调整直线，让小球从起点出发，经过检查点，进入终点。",
       "hint": "先让轨道经过起点，再观察斜率如何改变另一端的高度。",
       "templates": ["linear"], "initial_template": "linear",
@@ -12,7 +12,7 @@
       "start_tolerance": 0.3, "ball_radius": 0.16, "obstacles": [], "time_limit": 15
     },
     {
-      "id": "quiet_valley", "title": "绕过那片红色", "subtitle": "弯一下，路就有了。", "concept": "开口与顶点",
+      "id": "quiet_valley", "title": "绕开红区", "subtitle": "换一条弯曲的路，避开障碍。", "concept": "用开口和顶点调整抛物线",
       "objective": "用抛物线经过两个检查点，绕开红色障碍，再到达终点。",
       "hint": "把顶点放到下方的空白处，再调整开口；起点和终点不需要同高。",
       "templates": ["quadratic"], "initial_template": "quadratic",
@@ -23,7 +23,7 @@
       "obstacles": [[-2, 1.5, 3, 1.1], [4, -3, 2, 1]], "time_limit": 15
     },
     {
-      "id": "wave_walk", "title": "跟着波浪走", "subtitle": "找到起伏之间的节奏。", "concept": "振幅与频率",
+      "id": "wave_walk", "title": "随波前行", "subtitle": "在起伏之间找到合适的节奏。", "concept": "用振幅和频率改变波形",
       "objective": "调整正弦波，让小球先经过低处，再经过高处的检查点。",
       "hint": "先调波浪的疏密，再调高度；左右平移也会改变起点处的高度。",
       "templates": ["sine"], "initial_template": "sine",
@@ -34,7 +34,7 @@
       "obstacles": [[-1.2, 2.7, 1.2, 1.8], [1, -2, 1.5, 2]], "time_limit": 15
     },
     {
-      "id": "choose_your_way", "title": "选择你的解法", "subtitle": "这一次，先选一条合适的路。", "concept": "模板选择与综合调整",
+      "id": "choose_your_way", "title": "选择你的解法", "subtitle": "先选对函数，再慢慢调整。", "concept": "自由组合几种函数",
       "objective": "选择合适的函数，经过三个检查点，避开障碍并到达终点。",
       "hint": "观察三个检查点的高低变化，想一想哪种曲线更容易同时经过它们。",
       "templates": ["quadratic", "sine"], "initial_template": "quadratic",

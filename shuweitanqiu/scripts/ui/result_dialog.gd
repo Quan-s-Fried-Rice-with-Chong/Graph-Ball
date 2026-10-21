@@ -19,8 +19,9 @@ func _ready() -> void:
 func present(result: Dictionary, has_next: bool) -> void:
 	heading.text = "通关" if result.success else "未通过"
 	heading.add_theme_color_override("font_color", Color("187a6b") if result.success else Color("20334b"))
-	reason.text = "已通过全部检查点并到达终点。" if result.success else result.reason
-	summary.text = "用时  %.2f s     ·     检查点  %d / %d\n使用公式  %d 条     ·     演示运动" % [result.elapsed, result.reached, result.total, result.formula_count]
+	reason.visible = not result.success
+	reason.text = result.reason
+	summary.text = "用时  %.2f s     ·     检查点  %d / %d\n使用公式  %d 条" % [result.elapsed, result.reached, result.total, result.formula_count]
 	retry_button.text = "再玩一次" if result.success else "重试"
 	next_button.visible = result.success
 	next_button.text = "下一关  →" if has_next else "返回关卡选择"

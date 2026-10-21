@@ -30,18 +30,5 @@ theme_type_variation = &"NavButton"
 text = "＋  添加函数"
 tooltip_text = "添加一条函数，并为它单独设置定义域"
 
-[node name="LockMargin" type="MarginContainer" parent="."]
-layout_mode = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_right = 16
-
-[node name="LockLabel" type="Label" parent="LockMargin"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.51, 0.52, 0.55, 1)
-theme_override_font_sizes/font_size = 12
-text = "拖动滑条或输入数值；按 Enter 确认。"
-autowrap_mode = 3
-
 [node name="Divider" type="HSeparator" parent="."]
 layout_mode = 2

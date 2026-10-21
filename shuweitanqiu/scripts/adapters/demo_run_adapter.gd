@@ -9,7 +9,6 @@ signal state_changed(state: String)
 signal run_finished(result: Dictionary)
 
 const Catalog = preload("res://scripts/core/formula_catalog.gd")
-const MODE_LABEL := "演示运动 · 匀速沿轨道"
 const SPEED := 5.0
 const PATH_STEP := 0.02
 
@@ -198,7 +197,7 @@ func _check_segment(from: Vector2, to: Vector2) -> void:
 	if changed:
 		checkpoints_changed.emit(reached.duplicate())
 	if _segment_distance(level.goal, from, to) <= float(level.goal_radius) + float(level.ball_radius) and not false in reached:
-		_finish(true, "每一个检查点，都在你的轨道上。")
+		_finish(true, "")
 
 func _segment_distance(point: Vector2, from: Vector2, to: Vector2) -> float:
 	return point.distance_to(Geometry2D.get_closest_point_to_segment(point, from, to))

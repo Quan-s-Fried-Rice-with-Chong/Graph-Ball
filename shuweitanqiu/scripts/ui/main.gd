@@ -4,7 +4,13 @@ const Catalog = preload("res://scripts/core/formula_catalog.gd")
 const Levels = preload("res://scripts/core/level_repository.gd")
 const UITheme = preload("res://scripts/ui/ui_theme.gd")
 
+const SIDEBAR_WIDTH := 400.0
+const SIDEBAR_COLLAPSED_WIDTH := 26.0
+const SIDEBAR_ANIMATION_TIME := 0.24
+
 @onready var formula_panel = %FormulaPanel
+@onready var sidebar: PanelContainer = %Sidebar
+@onready var sidebar_body: Control = %SidebarBody
 @onready var graph = %GraphCanvas
 @onready var adapter = $RunAdapter
 @onready var result_dialog = %ResultDialog
@@ -21,6 +27,8 @@ var current_screen := "menu"
 var _has_entered_game := false
 var _booting := true
 var _levels_origin := "menu"
+var _sidebar_collapsed := false
+var _sidebar_tween: Tween
 
 func _ready() -> void:
 	get_window().title = "数维弹球"
@@ -49,6 +57,7 @@ func _connect_controls() -> void:
 	%PauseButton.pressed.connect(adapter.pause_or_resume)
 	%RetryButton.pressed.connect(retry_run)
 	%ResetButton.pressed.connect(reset_level)
+	%ToggleSidebarButton.pressed.connect(toggle_sidebar)
 	%FitButton.pressed.connect(graph.fit_view)
 	%ZoomInButton.pressed.connect(func(): graph.zoom_at(1.2, graph.size * 0.5))
 	%ZoomOutButton.pressed.connect(func(): graph.zoom_at(1.0 / 1.2, graph.size * 0.5))
@@ -69,6 +78,32 @@ func _connect_controls() -> void:
 	result_dialog.next_requested.connect(_next_level)
 	result_dialog.levels_requested.connect(open_levels)
 
+func toggle_sidebar() -> void:
+	set_sidebar_collapsed(not _sidebar_collapsed)
+
+func set_sidebar_collapsed(collapsed: bool) -> void:
+	if collapsed == _sidebar_collapsed:
+		return
+	_sidebar_collapsed = collapsed
+	if _sidebar_tween and _sidebar_tween.is_valid():
+		_sidebar_tween.kill()
+	sidebar_body.show()
+	sidebar_body.mouse_filter = Control.MOUSE_FILTER_IGNORE if collapsed else Control.MOUSE_FILTER_STOP
+	if collapsed:
+		get_viewport().gui_release_focus()
+	var target_width := SIDEBAR_COLLAPSED_WIDTH if collapsed else SIDEBAR_WIDTH
+	_sidebar_tween = create_tween()
+	_sidebar_tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_sidebar_tween.tween_property(sidebar, "custom_minimum_size:x", target_width, SIDEBAR_ANIMATION_TIME)
+	_sidebar_tween.parallel().tween_property(sidebar_body, "modulate:a", 0.0 if collapsed else 1.0, SIDEBAR_ANIMATION_TIME * 0.7)
+	if collapsed:
+		_sidebar_tween.chain().tween_callback(sidebar_body.hide)
+	%ToggleSidebarButton.symbol = "chevron_right" if collapsed else "chevron_left"
+	%ToggleSidebarButton.tooltip_text = "展开函数栏" if collapsed else "收起函数栏"
+
+func is_sidebar_collapsed() -> bool:
+	return _sidebar_collapsed
+
 func load_level(index: int) -> bool:
 	if index < 0 or index >= levels.size() or index > unlocked_level:
 		return false
@@ -88,7 +123,6 @@ func load_level(index: int) -> bool:
 	%FormulaValue.text = "%d / %d" % [formula_panel.get_formula_count(), formula_panel.get_max_formulas()]
 	graph.set_level(data)
 	adapter.configure_formulas(data, formula_panel.get_formulas())
-	%StatusMessage.text = "演示运动 · 匀速沿轨道"
 	current_screen = "game"
 	%GamePage.show()
 	main_menu.hide()
@@ -125,7 +159,6 @@ func _on_formulas_changed(formula_list: Array) -> void:
 	adapter.update_formulas(formula_list)
 	%FormulaValue.text = "%d / %d" % [formula_panel.get_formula_count(), formula_panel.get_max_formulas()]
 	graph.reset_trail()
-	%StatusMessage.text = "公式已更新"
 
 func start_run() -> void:
 	if _modal_open() or adapter.state != "editing":
@@ -139,11 +172,9 @@ func retry_run() -> void:
 	result_dialog.hide()
 	adapter.retry()
 	graph.reset_trail()
-	%StatusMessage.text = "重试：已保留参数"
 
 func reset_level() -> void:
 	load_level(current_level)
-	%StatusMessage.text = "重置：已恢复初始参数"
 
 func _on_ball_moved(point: Vector2, elapsed: float) -> void:
 	graph.set_ball(point, elapsed)
@@ -164,10 +195,6 @@ func _on_state_changed(state: String) -> void:
 	%PauseButton.queue_redraw()
 	var names := {"editing": "编辑中", "running": "运行中", "paused": "已暂停", "success": "已通关", "failed": "待调整"}
 	%StateLabel.text = names.get(state, state)
-	if state == "running":
-		%StatusMessage.text = "演示运动 · 匀速沿轨道"
-	elif state == "paused":
-		%StatusMessage.text = "已暂停"
 
 func _on_run_finished(result: Dictionary) -> void:
 	var saved := true
@@ -177,7 +204,6 @@ func _on_run_finished(result: Dictionary) -> void:
 			completed.append(id)
 		unlocked_level = mini(levels.size() - 1, maxi(unlocked_level, current_level + 1))
 		saved = _save_progress()
-	%StatusMessage.text = "本次演示成功。" if result.success else "重试会保留当前参数。"
 	if not saved:
 		%StatusMessage.text = "已通关；进度暂存于本次会话，无法写入存档文件。"
 	if current_screen == "game":
@@ -280,4 +306,4 @@ func _save_progress() -> bool:
 	return config.save(_progress_path) == OK
 
 func get_debug_snapshot() -> Dictionary:
-	return {"screen": current_screen, "details_expanded": formula_panel.is_details_expanded(), "level": current_level, "unlocked_level": unlocked_level, "state": adapter.state, "template": formula_panel.template_id, "parameters": formula_panel.parameters.duplicate(), "formulas": formula_panel.get_formulas(), "formula_count": formula_panel.get_formula_count(), "elapsed": adapter.elapsed, "checkpoints": adapter.reached.duplicate(), "result_visible": result_dialog.visible, "help_visible": %HelpModal.visible, "hint_visible": %HintModal.visible, "levels_visible": level_page.visible, "level_locks": level_page.get_lock_states(), "zoom": graph.zoom_factor}
+	return {"screen": current_screen, "details_expanded": formula_panel.is_details_expanded(), "sidebar_collapsed": _sidebar_collapsed, "level": current_level, "unlocked_level": unlocked_level, "state": adapter.state, "template": formula_panel.template_id, "parameters": formula_panel.parameters.duplicate(), "formulas": formula_panel.get_formulas(), "formula_count": formula_panel.get_formula_count(), "elapsed": adapter.elapsed, "checkpoints": adapter.reached.duplicate(), "result_visible": result_dialog.visible, "help_visible": %HelpModal.visible, "hint_visible": %HintModal.visible, "levels_visible": level_page.visible, "level_locks": level_page.get_lock_states(), "zoom": graph.zoom_factor}
