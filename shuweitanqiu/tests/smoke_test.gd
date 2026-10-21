@@ -85,6 +85,26 @@ func _run() -> void:
 	runner.advance(3.0)
 	check(runner.state == "failed" and "边界" in runner.last_result.reason, "world boundary failure independent of camera")
 	runner.queue_free()
+	var multi := Demo.new()
+	root.add_child(multi)
+	multi.set_physics_process(false)
+	var split_formulas := [
+		{"template": "linear", "parameters": SOLUTIONS[0].parameters, "domain": Vector2(-7.0, 0.0)},
+		{"template": "linear", "parameters": SOLUTIONS[0].parameters, "domain": Vector2(0.0, 8.0)}
+	]
+	multi.configure_formulas(levels[0], split_formulas)
+	check(multi.formulas.size() == 2 and multi.formulas[1].domain.is_equal_approx(Vector2(0, 8)), "adapter accepts two formulas with separate domains")
+	multi.start()
+	for _frame in range(1700):
+		multi.advance(1.0 / 120.0)
+		if multi.state != "running":
+			break
+	check(multi.state == "success" and multi.last_result.formula_count == 2, "two adjacent functions form one continuous demo track")
+	multi.configure_formulas(levels[0], [{"template": "linear", "parameters": SOLUTIONS[0].parameters, "domain": Vector2(-7.0, 2.0)}])
+	multi.start()
+	check(multi.state == "failed" and "定义域" in multi.last_result.reason, "uncovered x range reports a domain error")
+	check(not Catalog.validate_domain(Vector2(-10.0, 2.0), levels[0].bounds).is_empty(), "domain outside the plotting frame is rejected")
+	multi.queue_free()
 	await process_frame
 	var main = load("res://scenes/main.tscn").instantiate()
 	root.size = Vector2i(1440, 900)
@@ -97,19 +117,32 @@ func _run() -> void:
 	check(main.get_node("%HelpModal").visible and main.current_screen == "menu", "help opens from main menu")
 	main.close_help()
 	main.open_levels()
+	check(main.current_screen == "levels" and main.level_page.visible and not main.main_menu.visible and not main.get_node("%GamePage").visible, "level selection is a standalone full page")
+	check(main.level_page.get_node("%BackLevelsButton").text == "返回", "level page back button uses requested text")
 	main.close_levels()
 	check(main.current_screen == "menu" and main.main_menu.visible, "closing level selection returns to menu")
+	var wall = main.main_menu.get_node("DigitWall")
+	var wall_time: float = wall.elapsed
+	wall._process(1.0)
+	check(wall.elapsed > wall_time, "menu digit wall animates while visible")
+	check(main.get_node("%HelpButton").text == "教程文档" and main.main_menu.get_node("%MenuHelpButton").text == "教程文档", "tutorial document label is consistent")
 	main.main_menu.start_requested.emit()
 	check(main.current_screen == "game" and not main.main_menu.visible, "start menu opens game")
 	main._progress_path = "res://tests/.test_progress.cfg"
 	main.completed = []
 	main.unlocked_level = 0
 	main.load_level(0)
-	check(not main.formula_panel.get_node("DetailsMargin").visible, "formula details collapsed by default")
-	main.formula_panel.get_node("%ExpandButton").button_pressed = true
-	check(main.formula_panel.get_node("DetailsMargin").visible, "arrow expands template and parameters")
-	main.formula_panel.get_node("%ExpandButton").button_pressed = false
-	check(not main.formula_panel.get_node("DetailsMargin").visible, "arrow collapses details")
+	main.open_levels()
+	check(main.level_page.get_lock_states() == [false, true, true, true], "later levels remain locked until the previous level is completed")
+	check(main.level_page.get_node("%LevelRoute").cards[1].disabled, "locked level cannot be clicked")
+	main.level_page.back_requested.emit()
+	check(main.current_screen == "game", "return from level page restores game")
+	check(main.get_node("GamePage/Layout/Navigation/Margin/Row").get_child(0).name == "MainMenuButton", "main menu sits left of level selection")
+	check(not main.formula_panel.is_details_expanded(), "formula details collapsed by default")
+	main.formula_panel.set_details_expanded(true)
+	check(main.formula_panel.is_details_expanded(), "arrow expands template and parameters")
+	main.formula_panel.set_details_expanded(false)
+	check(not main.formula_panel.is_details_expanded(), "arrow collapses details")
 	for button_name in ["RunButton", "PauseButton", "RetryButton", "ResetButton"]:
 		var button = main.get_node("%" + button_name)
 		check(button.text.is_empty() and not button.tooltip_text.is_empty(), button_name + " is icon only with tooltip")
@@ -119,6 +152,13 @@ func _run() -> void:
 	check(is_equal_approx(main.formula_panel._fields.a.slider.value, -0.5) and is_equal_approx(main.adapter.parameters.a, -0.5), "numeric input updates slider and adapter")
 	main.formula_panel._fields.a.slider.value = -0.4
 	check(is_equal_approx(main.formula_panel._fields.a.spin.value, -0.4), "slider updates numeric input")
+	check(main.formula_panel.get_formula_count() == 1 and main.adapter.formulas.size() == 1, "level starts with one function")
+	var added: int = main.formula_panel.add_formula("linear", SOLUTIONS[0].parameters, Vector2(-7.0, 0.0))
+	check(added == 1 and main.formula_panel.get_formula_count() == 2 and main.adapter.formulas.size() == 2, "add function creates a second editable formula")
+	main.formula_panel.set_domain(1, 0.0, 8.0)
+	check(main.formula_panel.get_formulas()[1].domain.is_equal_approx(Vector2(0, 8)) and main.adapter.formulas[1].domain.is_equal_approx(Vector2(0, 8)), "domain bounds update UI and adapter")
+	main.formula_panel.remove_formula(1)
+	check(main.formula_panel.get_formula_count() == 1 and main.adapter.formulas.size() == 1, "remove function restores a single formula")
 	main.start_run()
 	var run_parameters: Dictionary = main.formula_panel.parameters.duplicate()
 	check(main.adapter.state == "running", "UI run starts simulation")
@@ -140,6 +180,9 @@ func _run() -> void:
 	await process_frame
 	check(main.result_dialog.visible and main.adapter.state == "success", "UI displays successful result")
 	check(main.unlocked_level == 1, "successful result unlocks next level")
+	main.open_levels()
+	check(main.level_page.get_lock_states() == [false, false, true, true], "passing first level unlocks only second level")
+	main.close_levels()
 	var key := InputEventKey.new()
 	key.keycode = KEY_R
 	key.pressed = true

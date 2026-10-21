@@ -1,6 +1,16 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=6 format=3]
 [ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/menu_sketch.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/ui/digit_wall.gd" id="3"]
+
+[sub_resource type="Gradient" id="Gradient_fade"]
+offsets = PackedFloat32Array(0, 0.38, 1)
+colors = PackedColorArray(0.89, 0.918, 0.957, 0.97, 0.89, 0.918, 0.957, 0.72, 0.89, 0.918, 0.957, 0.15)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture_fade"]
+gradient = SubResource("Gradient_fade")
+fill_from = Vector2(0, 0.5)
+fill_to = Vector2(1, 0.5)
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -16,8 +26,26 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(1, 1, 1, 1)
+color = Color(0.89, 0.918, 0.957, 1)
 mouse_filter = 2
+
+[node name="DigitWall" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+clip_contents = true
+script = ExtResource("3")
+
+[node name="ReadingFade" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = SubResource("GradientTexture_fade")
+expand_mode = 1
 
 [node name="Sketch" type="Control" parent="."]
 layout_mode = 1
@@ -104,7 +132,7 @@ custom_minimum_size = Vector2(224, 44)
 layout_mode = 2
 size_flags_horizontal = 0
 theme_type_variation = &"NavButton"
-text = "帮助"
+text = "教程文档"
 
 [node name="Note" type="Label" parent="."]
 layout_mode = 1

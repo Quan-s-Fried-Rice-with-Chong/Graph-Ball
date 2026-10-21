@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 [ext_resource type="Script" path="res://scripts/ui/main.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/components/formula_panel.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/components/graph_canvas.tscn" id="3"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://scripts/adapters/demo_run_adapter.gd" id="5"]
 [ext_resource type="Script" path="res://scripts/ui/icon_button.gd" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/components/main_menu.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/components/level_select_page.tscn" id="8"]
 
 [node name="FormulaLab" type="Control"]
 layout_mode = 1
@@ -94,6 +95,13 @@ theme_override_constants/margin_right = 26
 layout_mode = 2
 theme_override_constants/separation = 6
 
+[node name="MainMenuButton" type="Button" parent="GamePage/Layout/Navigation/Margin/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(84, 40)
+theme_type_variation = &"NavButton"
+text = "主菜单"
+
 [node name="LevelsButton" type="Button" parent="GamePage/Layout/Navigation/Margin/Row"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -106,14 +114,7 @@ unique_name_in_owner = true
 layout_mode = 2
 custom_minimum_size = Vector2(84, 40)
 theme_type_variation = &"NavButton"
-text = "帮助"
-
-[node name="MainMenuButton" type="Button" parent="GamePage/Layout/Navigation/Margin/Row"]
-unique_name_in_owner = true
-layout_mode = 2
-custom_minimum_size = Vector2(84, 40)
-theme_type_variation = &"NavButton"
-text = "主菜单"
+text = "教程文档"
 
 [node name="HintButton" type="Button" parent="GamePage/Layout/Navigation/Margin/Row"]
 unique_name_in_owner = true
@@ -372,58 +373,15 @@ unique_name_in_owner = true
 visible = false
 layout_mode = 1
 
-[node name="LevelModal" type="Control" parent="."]
+[node name="LevelSelectPage" parent="." instance=ExtResource("8")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-
-[node name="Shade" type="ColorRect" parent="LevelModal"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-color = Color(0.1, 0.17, 0.26, 0.25)
-
-[node name="Center" type="CenterContainer" parent="LevelModal"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-
-[node name="Card" type="PanelContainer" parent="LevelModal/Center"]
-custom_minimum_size = Vector2(700, 0)
-layout_mode = 2
-
-[node name="Content" type="VBoxContainer" parent="LevelModal/Center/Card"]
-layout_mode = 2
-theme_override_constants/separation = 20
-
-[node name="Title" type="Label" parent="LevelModal/Center/Card/Content"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 27
-text = "关卡选择"
-
-[node name="Subtitle" type="Label" parent="LevelModal/Center/Card/Content"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.51, 0.52, 0.55, 1)
-theme_override_font_sizes/font_size = 14
-text = "依次通关，解锁下一关。"
-
-[node name="LevelGrid" type="GridContainer" parent="LevelModal/Center/Card/Content"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_constants/h_separation = 14
-theme_override_constants/v_separation = 14
-columns = 2
-
-[node name="CloseLevelsButton" type="Button" parent="LevelModal/Center/Card/Content"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 44)
-layout_mode = 2
-text = "返回当前关卡"
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="HelpModal" type="Control" parent="."]
 unique_name_in_owner = true
@@ -457,12 +415,12 @@ theme_override_constants/separation = 20
 [node name="Title" type="Label" parent="HelpModal/Center/Card/Content"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 27
-text = "帮助"
+text = "教程文档"
 
 [node name="Body" type="Label" parent="HelpModal/Center/Card/Content"]
 custom_minimum_size = Vector2(580, 0)
 layout_mode = 2
-text = "01   点击公式右侧的小箭头，展开函数与参数。\n02   拖动滑条，或输入参数并按 Enter，观察蓝色轨道。\n03   让轨道接到起点，经过黄色检查点，避开红色障碍。\n04   点击运行，把小球送进绿色终点。\n\n重试：保留当前公式和参数，重新调整。\n重置：恢复本关最初的模板和参数。\n\n滚轮上下平移；Shift + 滚轮左右平移；\nCtrl + 滚轮缩放；中键拖动；适应画布恢复全景。\n空格运行 / 暂停，R 重试，Esc 关闭弹窗 / 暂停。"
+text = "01   点击每条函数右侧的小箭头，展开函数、参数与定义域。\n02   拖动滑条，或输入参数并按 Enter，观察蓝色轨道。\n03   点击“添加函数”可以组合多条轨道；最多四条。\n04   双滑片分别调整定义域的下界和上界，下方两个数值框可微调。\n05   多条函数按列表顺序覆盖 x 范围；重叠时上面的函数优先。\n06   让轨道接到起点，经过黄色检查点，避开红色障碍。\n07   点击运行，把小球送进绿色终点。\n\n重试：保留当前函数、参数和定义域，重新调整。\n重置：恢复本关最初的模板、参数和定义域。\n\n滚轮上下平移；Shift + 滚轮左右平移；\nCtrl + 滚轮缩放；中键拖动；适应画布恢复全景。\n空格运行 / 暂停，R 重试，Esc 关闭弹窗 / 暂停。"
 autowrap_mode = 3
 
 [node name="Note" type="Label" parent="HelpModal/Center/Card/Content"]
@@ -531,4 +489,4 @@ autowrap_mode = 3
 unique_name_in_owner = true
 layout_mode = 2
 custom_minimum_size = Vector2(0, 42)
-text = "返回游戏"
+text = "返回"

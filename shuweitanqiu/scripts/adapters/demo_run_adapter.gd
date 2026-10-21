@@ -11,10 +11,12 @@ signal run_finished(result: Dictionary)
 const Catalog = preload("res://scripts/core/formula_catalog.gd")
 const MODE_LABEL := "演示运动 · 匀速沿轨道"
 const SPEED := 5.0
+const PATH_STEP := 0.02
 
 var level: Dictionary = {}
 var template_id := "linear"
 var parameters: Dictionary = {}
+var formulas: Array = []
 var state := "editing"
 var elapsed := 0.0
 var ball_position := Vector2.ZERO
@@ -23,24 +25,57 @@ var last_result: Dictionary = {}
 var _path := PackedVector2Array()
 var _path_index := 0
 var _generation := 0
+var _path_error := ""
 
 func configure(data: Dictionary, next_template: String, next_parameters: Dictionary) -> void:
+	var domain := Vector2(data.bounds.position.x, data.bounds.end.x)
+	configure_formulas(data, [{"template": next_template, "parameters": next_parameters.duplicate(true), "domain": domain}])
+
+func configure_formulas(data: Dictionary, next_formulas: Array) -> void:
 	level = data.duplicate(true)
-	template_id = next_template
-	parameters = next_parameters.duplicate()
+	_set_formulas(next_formulas)
 	_reset_run()
 	_refresh_curve()
 
 func update_formula(next_template: String, next_parameters: Dictionary) -> void:
 	if state in ["running", "paused"]:
 		return
-	template_id = next_template
-	parameters = next_parameters.duplicate()
+	var domain := Vector2(level.bounds.position.x, level.bounds.end.x)
+	update_formulas([{"template": next_template, "parameters": next_parameters.duplicate(true), "domain": domain}])
+
+func update_formulas(next_formulas: Array) -> void:
+	if state in ["running", "paused"]:
+		return
+	_set_formulas(next_formulas)
 	_reset_run()
 	_refresh_curve()
 
+func _set_formulas(next_formulas: Array) -> void:
+	formulas = []
+	for item in next_formulas:
+		if not item is Dictionary:
+			continue
+		var formula_template: String = item.get("template", "linear")
+		var formula_parameters: Dictionary = item.get("parameters", {}).duplicate(true)
+		var domain: Variant = item.get("domain", Vector2(level.bounds.position.x, level.bounds.end.x))
+		formulas.append({"template": formula_template, "parameters": formula_parameters, "domain": _as_domain(domain)})
+	if formulas.is_empty():
+		formulas.append({"template": "linear", "parameters": {"a": 0.0, "b": 0.0}, "domain": Vector2(level.bounds.position.x, level.bounds.end.x)})
+	template_id = formulas[0].template
+	parameters = formulas[0].parameters.duplicate(true)
+
+func _as_domain(value: Variant) -> Vector2:
+	if value is Vector2:
+		return value
+	if value is Array and value.size() >= 2:
+		return Vector2(float(value[0]), float(value[1]))
+	return Vector2(level.bounds.position.x, level.bounds.end.x)
+
 func _refresh_curve() -> void:
-	curve_changed.emit(Catalog.sample(template_id, parameters, level.bounds))
+	var segments: Array = []
+	for formula in formulas:
+		segments.append_array(Catalog.sample(formula.template, formula.parameters, level.bounds, formula.domain))
+	curve_changed.emit(segments)
 
 func _reset_run() -> void:
 	_generation += 1
@@ -51,6 +86,7 @@ func _reset_run() -> void:
 	for _point in level.checkpoints:
 		reached.append(false)
 	_path_index = 0
+	_path_error = ""
 	_set_state("editing")
 	checkpoints_changed.emit(reached.duplicate())
 	ball_moved.emit(ball_position, elapsed)
@@ -61,24 +97,55 @@ func retry() -> void:
 func start() -> void:
 	if state != "editing":
 		return
-	var error := Catalog.validate(template_id, parameters)
-	if not error.is_empty():
-		_finish(false, error)
+	for formula in formulas:
+		var error := Catalog.validate(formula.template, formula.parameters)
+		if not error.is_empty():
+			_finish(false, error)
+			return
+		error = Catalog.validate_domain(formula.domain, level.bounds)
+		if not error.is_empty():
+			_finish(false, error)
+			return
+	var start_y := _curve_y_at(level.start.x)
+	if is_nan(start_y):
+		_finish(false, "轨道没有覆盖起点。调整定义域，让函数接到起点圆环。")
 		return
-	var start_point := Vector2(level.start.x, Catalog.evaluate(template_id, parameters, level.start.x))
-	if start_point.distance_to(level.start) > float(level.start_tolerance):
+	if Vector2(level.start.x, start_y).distance_to(level.start) > float(level.start_tolerance):
 		_finish(false, "轨道还没有接到起点。调整参数，让蓝线穿过起点圆环。")
 		return
-	_path = PackedVector2Array([level.start])
-	for i in range(601):
-		var x: float = lerpf(level.start.x, level.goal.x + 0.75, float(i) / 600.0)
-		var y: float = Catalog.evaluate(template_id, parameters, x)
-		if not is_finite(y):
-			_finish(false, "轨道出现了无效数值，请调整参数。")
-			return
-		_path.append(Vector2(x, y))
+	_path = _build_path()
+	if _path.is_empty():
+		_finish(false, _path_error)
+		return
 	_path_index = 1
 	_set_state("running")
+
+func _build_path() -> PackedVector2Array:
+	_path_error = ""
+	var from_x: float = level.start.x
+	var to_x: float = level.goal.x
+	var span := to_x - from_x
+	if absf(span) < 0.0001:
+		return PackedVector2Array([level.start])
+	var steps := maxi(2, ceili(absf(span) / PATH_STEP))
+	var points := PackedVector2Array([level.start])
+	for i in range(1, steps + 1):
+		var x: float = lerpf(from_x, to_x, float(i) / float(steps))
+		var y: float = _curve_y_at(x)
+		if is_nan(y):
+			_path_error = "轨道没有覆盖从起点到终点的 x 范围。调整定义域，让几条函数首尾相接。"
+			return PackedVector2Array()
+		points.append(Vector2(x, y))
+	return points
+
+func _curve_y_at(x: float) -> float:
+	for formula in formulas:
+		var domain: Vector2 = formula.domain
+		if x >= domain.x - 0.0001 and x <= domain.y + 0.0001:
+			var y: float = Catalog.evaluate(formula.template, formula.parameters, x)
+			if is_finite(y):
+				return y
+	return NAN
 
 func pause_or_resume() -> void:
 	if state == "running":
@@ -150,7 +217,7 @@ func _set_state(value: String) -> void:
 	state_changed.emit(state)
 
 func _finish(success: bool, reason: String) -> void:
-	last_result = {"success": success, "reason": reason, "elapsed": elapsed, "reached": reached.count(true), "total": reached.size(), "formula_count": 1, "mode": "demo"}
+	last_result = {"success": success, "reason": reason, "elapsed": elapsed, "reached": reached.count(true), "total": reached.size(), "formula_count": formulas.size(), "mode": "demo"}
 	_set_state("success" if success else "failed")
 	# Deferred delivery lets the final ball position reach the canvas first.
 	_deliver_result.call_deferred(last_result.duplicate(), _generation)

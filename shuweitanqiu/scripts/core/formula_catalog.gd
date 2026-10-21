@@ -53,13 +53,20 @@ static func validate(template_id: String, parameters: Dictionary) -> String:
 			return "参数 %s 应在 %s 到 %s 之间。" % [key, spec.min, spec.max]
 	return ""
 
-static func sample(template_id: String, parameters: Dictionary, bounds: Rect2) -> Array:
+static func sample(template_id: String, parameters: Dictionary, bounds: Rect2, domain: Variant = null) -> Array:
 	var segments: Array = []
 	var points := PackedVector2Array()
 	if not validate(template_id, parameters).is_empty():
 		return segments
+	var from_x: float = bounds.position.x
+	var to_x: float = bounds.end.x
+	if domain is Vector2:
+		from_x = clampf(domain.x, bounds.position.x, bounds.end.x)
+		to_x = clampf(domain.y, bounds.position.x, bounds.end.x)
+	if to_x <= from_x:
+		return segments
 	for i in range(901):
-		var x: float = lerpf(bounds.position.x, bounds.end.x, float(i) / 900.0)
+		var x: float = lerpf(from_x, to_x, float(i) / 900.0)
 		var y: float = evaluate(template_id, parameters, x)
 		if is_finite(y) and absf(y) < 200.0:
 			points.append(Vector2(x, y))
@@ -70,6 +77,17 @@ static func sample(template_id: String, parameters: Dictionary, bounds: Rect2) -
 	if points.size() > 1:
 		segments.append(points)
 	return segments
+
+static func validate_domain(domain: Variant, bounds: Rect2) -> String:
+	if not domain is Vector2:
+		return "定义域格式无效。"
+	if not is_finite(domain.x) or not is_finite(domain.y):
+		return "定义域必须是有效数值。"
+	if domain.y - domain.x < 0.05:
+		return "定义域的上下界至少相差 0.1。"
+	if domain.x < bounds.position.x or domain.y > bounds.end.x:
+		return "定义域应位于作图区的 x 范围内。"
+	return ""
 
 static func formatted(template_id: String, p: Dictionary) -> String:
 	match template_id:

@@ -6,6 +6,7 @@
 
 - 数据全部使用数学坐标：x 向右，y 向上。像素坐标转换只在 `GraphCanvas` 内进行。
 - `bounds` 为数学坐标 `Rect2(xmin, ymin, width, height)`，不是随镜头变化的屏幕范围。
+- 画布网格延伸到整个可见视口；`bounds` 在画面中显示为作图区边框。B 在绘制时将曲线裁剪到这个边框内，框外仍显示坐标网格。
 - 曲线点是世界坐标。`curve_changed` 的每一项是独立的 `PackedVector2Array`；不连续点处必须拆段，画布不会跨段连线。
 - `ball_moved` 提供的是球心坐标。当前原型的球心沿曲线；A 若实现球滚在轨道上，应提供偏移后的球心，B 直接绘制。
 - 起终点、检查点、障碍和球半径都使用同一套世界单位。画布缩放不应改变判定。
@@ -15,13 +16,27 @@
 
 ```gdscript
 configure(level: Dictionary, template_id: String, parameters: Dictionary) -> void
+configure_formulas(level: Dictionary, formulas: Array) -> void
 update_formula(template_id: String, parameters: Dictionary) -> void
+update_formulas(formulas: Array) -> void
 start() -> void
 pause_or_resume() -> void
 retry() -> void
 ```
 
-`configure` 切换关卡并回到编辑状态；`update_formula` 在编辑时刷新曲线；`retry` 清空运行状态、时间和检查点，从起点重新开始，保留公式参数。重置由 B 恢复初始模板/参数后重新 `configure`。
+`configure` / `configure_formulas` 切换关卡并回到编辑状态；`update_formula(s)` 在编辑时刷新曲线；`retry` 清空运行状态、时间和检查点，从起点重新开始，保留全部函数。重置由 B 恢复初始函数后重新 `configure_formulas`。
+
+B 传给适配器的每条函数结构如下，`domain` 是数学坐标中的 x 闭区间：
+
+```gdscript
+{
+    "template": "linear",
+    "parameters": {"a": 0.5, "b": 2.0},
+    "domain": Vector2(-9.0, 11.0)
+}
+```
+
+多条函数按列表顺序覆盖 x 范围；定义域重叠时，列表靠前的函数优先。对应 `curve_changed` 仍返回若干独立折线段，B 会全部绘制。演示适配器只让小球经过起点 x 到终点 x 之间的覆盖区域；若这一段没有被任何定义域覆盖，会给出定义域错误。正式接轨时，轨道衔接和定义域边界处的跳变规则仍需双方确认。
 
 当前 UI 读取适配器的 `state` 和 `last_result`。状态值为 `editing`、`running`、`paused`、`success`、`failed`。运行/暂停时应拒绝公式修改。
 
@@ -46,7 +61,7 @@ signal run_finished(result: Dictionary)
     "elapsed": 3.2,
     "reached": 2,
     "total": 2,
-    "formula_count": 1,
+    "formula_count": 2,
     "mode": "demo" # 接入正式运动后一起调整界面标记与存档命名
 }
 ```
@@ -73,7 +88,7 @@ JSON 中坐标为 `[x,y]`，范围与障碍为 `[x,y,width,height]`；`level_rep
 1. 球是否始终吸附，什么时候允许脱轨和自由落体。
 2. 起点连接容差、球心偏移和球半径。
 3. 哪些障碍导致失败，哪些物体会反弹。
-4. 是否允许多条轨道、怎样限定定义域和处理轨道衔接。
+4. 定义域边界处的真实轨道衔接、跳变和碰撞规则。
 5. COST / 星级的计算规则，以及正式进度的存档方式。
 
-当前原型只开放一条公式；结算显示用时、检查点和公式数。COST、星级、传送门、轨道拼接与排行榜未实现。
+当前原型最多开放四条公式，每条可独立设置定义域和参数；结算显示用时、检查点和公式数。COST、星级、传送门与排行榜未实现。

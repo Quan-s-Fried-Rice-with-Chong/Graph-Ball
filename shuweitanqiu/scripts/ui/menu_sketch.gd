@@ -17,13 +17,13 @@ func _draw() -> void:
 	var origin := area.get_center() + Vector2(0, scale_factor * 0.3)
 	for i in range(-4, 5):
 		var x := origin.x + i * scale_factor
-		draw_line(Vector2(x, area.position.y), Vector2(x, area.end.y), Color("eceef1"))
+		draw_line(Vector2(x, area.position.y), Vector2(x, area.end.y), Color("dce3ed"))
 	for i in range(-3, 4):
 		var y := origin.y + i * scale_factor
 		if y >= area.position.y and y <= area.end.y:
-			draw_line(Vector2(area.position.x, y), Vector2(area.end.x, y), Color("eceef1"))
-	draw_line(Vector2(area.position.x, origin.y), Vector2(area.end.x, origin.y), Color("b9bec8"), 1.2)
-	draw_line(Vector2(origin.x, area.position.y), Vector2(origin.x, area.end.y), Color("b9bec8"), 1.2)
+			draw_line(Vector2(area.position.x, y), Vector2(area.end.x, y), Color("dce3ed"))
+	draw_line(Vector2(area.position.x, origin.y), Vector2(area.end.x, origin.y), Color("aab3c2"), 1.2)
+	draw_line(Vector2(origin.x, area.position.y), Vector2(origin.x, area.end.y), Color("aab3c2"), 1.2)
 	var points := PackedVector2Array()
 	for i in range(181):
 		var x := lerpf(-3.2, 3.2, i / 180.0)
@@ -31,7 +31,7 @@ func _draw() -> void:
 		points.append(origin + Vector2(x, -y) * scale_factor)
 	draw_polyline(points, Color("4968b5"), 2.2, true)
 	for index in [0, 180]:
-		draw_circle(points[index], 6, Color.WHITE)
+		draw_circle(points[index], 6, Color("e3eaf4"))
 		draw_arc(points[index], 6, 0, TAU, 32, Color("4968b5"), 1.6, true)
 	var x := lerpf(-3.2, 3.2, _phase)
 	var y := 0.12 * x * x - 0.6 * x + 0.1

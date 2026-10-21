@@ -1,91 +1,47 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=2 format=3]
 [ext_resource type="Script" path="res://scripts/ui/formula_panel.gd" id="1"]
-[ext_resource type="Script" path="res://scripts/ui/icon_button.gd" id="2"]
 
 [node name="FormulaPanel" type="VBoxContainer"]
 size_flags_horizontal = 3
-theme_override_constants/separation = 0
+theme_override_constants/separation = 12
 script = ExtResource("1")
 
-[node name="SummaryMargin" type="MarginContainer" parent="."]
+[node name="TopMargin" type="MarginContainer" parent="."]
 layout_mode = 2
 theme_override_constants/margin_left = 18
-theme_override_constants/margin_right = 8
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
 
-[node name="FormulaRow" type="HBoxContainer" parent="SummaryMargin"]
-custom_minimum_size = Vector2(0, 72)
-layout_mode = 2
-theme_override_constants/separation = 13
-
-[node name="ColorDot" type="Label" parent="SummaryMargin/FormulaRow"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.286, 0.408, 0.71, 1)
-theme_override_font_sizes/font_size = 15
-text = "●"
-
-[node name="ExpressionLabel" type="Label" parent="SummaryMargin/FormulaRow"]
+[node name="FormulaList" type="VBoxContainer" parent="TopMargin"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
-theme_type_variation = &"MathLabel"
-text = "y = −0.3x + 2.2"
-autowrap_mode = 3
-vertical_alignment = 1
+theme_override_constants/separation = 10
 
-[node name="ExpandButton" type="Button" parent="SummaryMargin/FormulaRow"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(38, 38)
+[node name="ActionMargin" type="MarginContainer" parent="."]
 layout_mode = 2
-size_flags_vertical = 4
-theme_type_variation = &"DisclosureButton"
-tooltip_text = "调整公式"
-toggle_mode = true
-script = ExtResource("2")
-symbol = "chevron_right"
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_right = 16
 
-[node name="DetailsMargin" type="MarginContainer" parent="."]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-theme_override_constants/margin_left = 44
-theme_override_constants/margin_top = 2
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 24
-
-[node name="Details" type="VBoxContainer" parent="DetailsMargin"]
-layout_mode = 2
-theme_override_constants/separation = 15
-
-[node name="TemplatePicker" type="OptionButton" parent="DetailsMargin/Details"]
+[node name="AddFormulaButton" type="Button" parent="ActionMargin"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 15
-text = "一次函数 · 直线"
-clip_text = true
+theme_type_variation = &"NavButton"
+text = "＋  添加函数"
+tooltip_text = "添加一条函数，并为它单独设置定义域"
 
-[node name="TemplateDescription" type="Label" parent="DetailsMargin/Details"]
-unique_name_in_owner = true
+[node name="LockMargin" type="MarginContainer" parent="."]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.51, 0.52, 0.55, 1)
-theme_override_font_sizes/font_size = 13
-text = "a 改变倾斜方向，b 让整条直线上下移动。"
-autowrap_mode = 3
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_right = 16
 
-[node name="ParameterList" type="VBoxContainer" parent="DetailsMargin/Details"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_constants/separation = 14
-
-[node name="LockLabel" type="Label" parent="DetailsMargin/Details"]
+[node name="LockLabel" type="Label" parent="LockMargin"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.51, 0.52, 0.55, 1)
 theme_override_font_sizes/font_size = 12
-text = "数值输入后按 Enter 确认。"
+text = "拖动滑条或输入数值；按 Enter 确认。"
 autowrap_mode = 3
 
 [node name="Divider" type="HSeparator" parent="."]
 layout_mode = 2
-

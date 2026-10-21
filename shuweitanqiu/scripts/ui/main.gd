@@ -9,6 +9,7 @@ const UITheme = preload("res://scripts/ui/ui_theme.gd")
 @onready var adapter = $RunAdapter
 @onready var result_dialog = %ResultDialog
 @onready var main_menu = %MainMenu
+@onready var level_page = %LevelSelectPage
 
 var levels: Array = []
 var current_level := 0
@@ -19,8 +20,10 @@ var _progress_path := "user://b_prototype_progress.cfg"
 var current_screen := "menu"
 var _has_entered_game := false
 var _booting := true
+var _levels_origin := "menu"
 
 func _ready() -> void:
+	get_window().title = "数维弹球"
 	theme = UITheme.create()
 	levels = Levels.load_levels()
 	if levels.is_empty():
@@ -36,7 +39,7 @@ func _ready() -> void:
 	_booting = false
 
 func _connect_controls() -> void:
-	formula_panel.formula_changed.connect(_on_formula_changed)
+	formula_panel.formulas_changed.connect(_on_formulas_changed)
 	adapter.curve_changed.connect(graph.set_curve)
 	adapter.ball_moved.connect(_on_ball_moved)
 	adapter.checkpoints_changed.connect(_on_checkpoints_changed)
@@ -58,7 +61,8 @@ func _connect_controls() -> void:
 	main_menu.start_requested.connect(enter_game)
 	main_menu.levels_requested.connect(open_levels)
 	main_menu.help_requested.connect(open_help)
-	%CloseLevelsButton.pressed.connect(close_levels)
+	level_page.back_requested.connect(close_levels)
+	level_page.level_requested.connect(load_level)
 	%CloseHelpButton.pressed.connect(close_help)
 	%CloseHintButton.pressed.connect(close_hint)
 	result_dialog.retry_requested.connect(retry_run)
@@ -72,7 +76,7 @@ func load_level(index: int) -> bool:
 	current_level = index
 	var data: Dictionary = levels[index]
 	result_dialog.hide()
-	%LevelModal.hide()
+	level_page.hide()
 	%HelpModal.hide()
 	%HintModal.hide()
 	%LevelNumber.text = "%02d" % (index + 1)
@@ -81,8 +85,9 @@ func load_level(index: int) -> bool:
 	%HintText.text = data.objective + "\n\n" + data.hint
 	formula_panel.set_locked(false)
 	formula_panel.configure(data)
+	%FormulaValue.text = "%d / %d" % [formula_panel.get_formula_count(), formula_panel.get_max_formulas()]
 	graph.set_level(data)
-	adapter.configure(data, formula_panel.template_id, formula_panel.parameters)
+	adapter.configure_formulas(data, formula_panel.get_formulas())
 	%StatusMessage.text = "演示运动 · 匀速沿轨道"
 	current_screen = "game"
 	%GamePage.show()
@@ -96,13 +101,14 @@ func enter_game() -> void:
 	current_screen = "game"
 	_has_entered_game = true
 	main_menu.hide()
+	level_page.hide()
 	%GamePage.show()
 	_restore_result_if_needed()
 
 func open_main_menu() -> void:
 	if adapter.state == "running":
 		adapter.pause_or_resume()
-	for modal in [result_dialog, %HelpModal, %LevelModal, %HintModal]:
+	for modal in [result_dialog, %HelpModal, level_page, %HintModal]:
 		modal.hide()
 	current_screen = "menu"
 	%GamePage.hide()
@@ -113,12 +119,13 @@ func _restore_result_if_needed() -> void:
 	if current_screen == "game" and adapter.state in ["success", "failed"]:
 		result_dialog.present(adapter.last_result, current_level < levels.size() - 1)
 
-func _on_formula_changed(template_id: String, parameters: Dictionary) -> void:
+func _on_formulas_changed(formula_list: Array) -> void:
 	if _loading:
 		return
-	adapter.update_formula(template_id, parameters)
+	adapter.update_formulas(formula_list)
+	%FormulaValue.text = "%d / %d" % [formula_panel.get_formula_count(), formula_panel.get_max_formulas()]
 	graph.reset_trail()
-	%StatusMessage.text = "参数已更新"
+	%StatusMessage.text = "公式已更新"
 
 func start_run() -> void:
 	if _modal_open() or adapter.state != "editing":
@@ -194,29 +201,23 @@ func close_hint() -> void:
 func open_levels() -> void:
 	if adapter.state == "running":
 		adapter.pause_or_resume()
+	if current_screen != "levels":
+		_levels_origin = current_screen
 	result_dialog.hide()
 	%HelpModal.hide()
-	for child in %LevelGrid.get_children():
-		%LevelGrid.remove_child(child)
-		child.queue_free()
-	for i in range(levels.size()):
-		var data: Dictionary = levels[i]
-		var button := Button.new()
-		button.name = "Level_%02d" % (i + 1)
-		button.custom_minimum_size = Vector2(320, 128)
-		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		var status := "已完成" if completed.has(data.id) else ("可以挑战" if i <= unlocked_level else "完成前一关后解锁")
-		button.text = "%02d   %s\n%s\n%s" % [i + 1, data.title, data.concept, status]
-		button.disabled = i > unlocked_level
-		button.pressed.connect(func(): load_level(i))
-		%LevelGrid.add_child(button)
-	%LevelModal.show()
-	%CloseLevelsButton.grab_focus()
+	%HintModal.hide()
+	main_menu.hide()
+	%GamePage.hide()
+	current_screen = "levels"
+	level_page.configure(levels, unlocked_level, completed)
+	level_page.show()
 
 func close_levels() -> void:
-	%LevelModal.hide()
-	_restore_result_if_needed()
+	level_page.hide()
+	if _levels_origin == "game":
+		enter_game()
+	else:
+		open_main_menu()
 
 func open_help() -> void:
 	if adapter.state == "running":
@@ -228,7 +229,7 @@ func close_help() -> void:
 	%HelpModal.hide()
 
 func _modal_open() -> bool:
-	return current_screen != "game" or result_dialog.visible or %LevelModal.visible or %HelpModal.visible or %HintModal.visible
+	return current_screen != "game" or result_dialog.visible or %HelpModal.visible or %HintModal.visible
 
 func _input(event: InputEvent) -> void:
 	if not event is InputEventKey or not event.pressed or event.echo:
@@ -238,7 +239,7 @@ func _input(event: InputEvent) -> void:
 			close_help()
 		elif %HintModal.visible:
 			close_hint()
-		elif %LevelModal.visible:
+		elif current_screen == "levels":
 			close_levels()
 		elif current_screen == "game" and not result_dialog.visible:
 			adapter.pause_or_resume()
@@ -279,4 +280,4 @@ func _save_progress() -> bool:
 	return config.save(_progress_path) == OK
 
 func get_debug_snapshot() -> Dictionary:
-	return {"screen": current_screen, "details_expanded": formula_panel.get_node("DetailsMargin").visible, "level": current_level, "unlocked_level": unlocked_level, "state": adapter.state, "template": formula_panel.template_id, "parameters": formula_panel.parameters.duplicate(), "elapsed": adapter.elapsed, "checkpoints": adapter.reached.duplicate(), "result_visible": result_dialog.visible, "help_visible": %HelpModal.visible, "hint_visible": %HintModal.visible, "levels_visible": %LevelModal.visible, "zoom": graph.zoom_factor}
+	return {"screen": current_screen, "details_expanded": formula_panel.is_details_expanded(), "level": current_level, "unlocked_level": unlocked_level, "state": adapter.state, "template": formula_panel.template_id, "parameters": formula_panel.parameters.duplicate(), "formulas": formula_panel.get_formulas(), "formula_count": formula_panel.get_formula_count(), "elapsed": adapter.elapsed, "checkpoints": adapter.reached.duplicate(), "result_visible": result_dialog.visible, "help_visible": %HelpModal.visible, "hint_visible": %HintModal.visible, "levels_visible": level_page.visible, "level_locks": level_page.get_lock_states(), "zoom": graph.zoom_factor}
