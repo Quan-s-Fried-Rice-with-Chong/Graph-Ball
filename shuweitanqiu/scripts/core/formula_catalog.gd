@@ -4,7 +4,6 @@ extends RefCounted
 const TEMPLATES = {
 	"linear": {
 		"title": "一次函数 · 直线", "expression": "y = ax + b",
-		"description": "a 改变倾斜方向，b 让整条直线上下移动。",
 		"parameters": [
 			{"key": "a", "title": "斜率", "min": -1.5, "max": 1.5, "step": 0.01},
 			{"key": "b", "title": "上下平移", "min": -4.0, "max": 6.0, "step": 0.01}
@@ -12,7 +11,6 @@ const TEMPLATES = {
 	},
 	"quadratic": {
 		"title": "二次函数 · 抛物线", "expression": "y = a(x − h)² + k",
-		"description": "a 改变开口，h 和 k 决定顶点的位置。",
 		"parameters": [
 			{"key": "a", "title": "开口大小", "min": -0.2, "max": 0.2, "step": 0.01},
 			{"key": "h", "title": "左右平移", "min": -4.0, "max": 4.0, "step": 0.05},
@@ -21,7 +19,6 @@ const TEMPLATES = {
 	},
 	"sine": {
 		"title": "正弦函数 · 波浪", "expression": "y = a sin[b(x − h)] + k",
-		"description": "a 调整波高，b 调整疏密，h 和 k 移动波形。",
 		"parameters": [
 			{"key": "a", "title": "振幅", "min": 0.25, "max": 3.0, "step": 0.05},
 			{"key": "b", "title": "频率", "min": 0.2, "max": 1.2, "step": 0.01},

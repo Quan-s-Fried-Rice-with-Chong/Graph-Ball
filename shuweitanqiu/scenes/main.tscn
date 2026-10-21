@@ -30,6 +30,16 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
+[node name="Background" type="ColorRect" parent="GamePage"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.969, 0.976, 0.988, 1)
+mouse_filter = 2
+
 [node name="Layout" type="VBoxContainer" parent="GamePage"]
 layout_mode = 1
 anchors_preset = 15
@@ -57,7 +67,7 @@ theme_override_constants/separation = 12
 layout_mode = 2
 theme_override_font_sizes/font_size = 36
 text = "∿"
-theme_override_colors/font_color = Color(0.094, 0.478, 0.42, 1)
+theme_override_colors/font_color = Color(0.286, 0.408, 0.71, 1)
 
 [node name="Brand" type="Label" parent="GamePage/Layout/Header/Margin/Row"]
 layout_mode = 2
@@ -194,18 +204,57 @@ size_flags_vertical = 3
 theme_override_constants/separation = 0
 
 [node name="Sidebar" type="PanelContainer" parent="GamePage/Layout/Workspace"]
+unique_name_in_owner = true
+clip_contents = true
 layout_mode = 2
-custom_minimum_size = Vector2(380, 0)
+custom_minimum_size = Vector2(400, 0)
 theme_type_variation = &"SidebarPanel"
 
-[node name="FormulaScroll" type="ScrollContainer" parent="GamePage/Layout/Workspace/Sidebar"]
+[node name="SidebarLayout" type="HBoxContainer" parent="GamePage/Layout/Workspace/Sidebar"]
 layout_mode = 2
-horizontal_scroll_mode = 0
+theme_override_constants/separation = 0
 
-[node name="FormulaPanel" parent="GamePage/Layout/Workspace/Sidebar/FormulaScroll" instance=ExtResource("2")]
+[node name="SidebarBody" type="Control" parent="GamePage/Layout/Workspace/Sidebar/SidebarLayout"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="FormulaScroll" type="ScrollContainer" parent="GamePage/Layout/Workspace/Sidebar/SidebarLayout/SidebarBody"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_scroll_mode = 0
+
+[node name="FormulaPanel" parent="GamePage/Layout/Workspace/Sidebar/SidebarLayout/SidebarBody/FormulaScroll" instance=ExtResource("2")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Rail" type="VBoxContainer" parent="GamePage/Layout/Workspace/Sidebar/SidebarLayout"]
+custom_minimum_size = Vector2(26, 0)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="RailTopFiller" type="Control" parent="GamePage/Layout/Workspace/Sidebar/SidebarLayout/Rail"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ToggleSidebarButton" type="Button" parent="GamePage/Layout/Workspace/Sidebar/SidebarLayout/Rail"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(26, 44)
+layout_mode = 2
+focus_mode = 0
+theme_type_variation = &"ToolButton"
+tooltip_text = "收起函数栏"
+script = ExtResource("6")
+symbol = "chevron_left"
+
+[node name="RailFiller" type="Control" parent="GamePage/Layout/Workspace/Sidebar/SidebarLayout/Rail"]
+layout_mode = 2
+size_flags_vertical = 3
 
 [node name="Canvas" type="VBoxContainer" parent="GamePage/Layout/Workspace"]
 layout_mode = 2
@@ -341,7 +390,7 @@ theme_override_constants/separation = 20
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
-text = "演示运动 · 匀速沿轨道"
+text = ""
 theme_override_colors/font_color = Color(0.51, 0.52, 0.55, 1)
 size_flags_horizontal = 3
 clip_text = true
@@ -421,13 +470,6 @@ text = "教程文档"
 custom_minimum_size = Vector2(580, 0)
 layout_mode = 2
 text = "01   点击每条函数右侧的小箭头，展开函数、参数与定义域。\n02   拖动滑条，或输入参数并按 Enter，观察蓝色轨道。\n03   点击“添加函数”可以组合多条轨道；最多四条。\n04   双滑片分别调整定义域的下界和上界，下方两个数值框可微调。\n05   多条函数按列表顺序覆盖 x 范围；重叠时上面的函数优先。\n06   让轨道接到起点，经过黄色检查点，避开红色障碍。\n07   点击运行，把小球送进绿色终点。\n\n重试：保留当前函数、参数和定义域，重新调整。\n重置：恢复本关最初的模板、参数和定义域。\n\n滚轮上下平移；Shift + 滚轮左右平移；\nCtrl + 滚轮缩放；中键拖动；适应画布恢复全景。\n空格运行 / 暂停，R 重试，Esc 关闭弹窗 / 暂停。"
-autowrap_mode = 3
-
-[node name="Note" type="Label" parent="HelpModal/Center/Card/Content"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.51, 0.52, 0.55, 1)
-theme_override_font_sizes/font_size = 13
-text = "当前是界面原型：小球沿曲线匀速移动，重力与反弹待接入。\n检查点是必须经过的目标，重试会从起点重新开始。"
 autowrap_mode = 3
 
 [node name="CloseHelpButton" type="Button" parent="HelpModal/Center/Card/Content"]

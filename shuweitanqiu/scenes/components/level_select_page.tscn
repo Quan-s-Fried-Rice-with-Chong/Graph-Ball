@@ -14,22 +14,22 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.985, 0.989, 0.997, 1)
+color = Color(0.969, 0.976, 0.988, 1)
 mouse_filter = 2
 
 [node name="HeaderMargin" type="MarginContainer" parent="."]
 layout_mode = 1
 anchor_right = 1.0
-offset_bottom = 74.0
-theme_override_constants/margin_left = 28
-theme_override_constants/margin_right = 28
+offset_bottom = 66.0
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_right = 26
 
 [node name="Row" type="HBoxContainer" parent="HeaderMargin"]
 layout_mode = 2
 
 [node name="Logo" type="Label" parent="HeaderMargin/Row"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.094, 0.478, 0.42, 1)
+theme_override_colors/font_color = Color(0.286, 0.408, 0.71, 1)
 theme_override_font_sizes/font_size = 36
 text = "∿"
 
@@ -61,12 +61,6 @@ offset_bottom = 72.0
 layout_mode = 2
 theme_override_font_sizes/font_size = 34
 text = "关卡选择"
-
-[node name="Description" type="Label" parent="Heading"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.51, 0.54, 0.60, 1)
-theme_override_font_sizes/font_size = 16
-text = "按顺序完成关卡，解锁下一段轨道。"
 
 [node name="LevelRoute" type="Control" parent="."]
 unique_name_in_owner = true

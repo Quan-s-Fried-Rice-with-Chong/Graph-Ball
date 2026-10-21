@@ -20,7 +20,7 @@ func _ready() -> void:
 
 func _draw() -> void:
 	var center_x := size.x * 0.5
-	var circle_color := Color("b9c3d2") if locked else (Color("278776") if completed else Color("4968b5"))
+	var circle_color := Color("b9c3d2") if locked else Color("4968b5")
 	draw_circle(Vector2(center_x, 55), 29, circle_color)
 	_centered("%02d" % (level_index + 1), 64, 24, Color("515d71") if locked else Color.WHITE)
 	_centered(level_title, 119, 19, Color("606b7e") if locked else Color("30343b"))
@@ -31,7 +31,7 @@ func _draw() -> void:
 		draw_arc(at + Vector2(5, 0), 4, PI, TAU, 16, Color("717d91"), 1.3, true)
 		_centered("未解锁", 188, 14, Color("717d91"), 9)
 	else:
-		_centered("已通关" if completed else "可挑战", 188, 14, circle_color)
+		_centered("已通关" if completed else "可挑战", 188, 14, Color("278776") if completed else circle_color)
 
 func _centered(value: String, baseline: float, font_size: int, color: Color, offset: float = 0) -> void:
 	var font := get_theme_default_font()

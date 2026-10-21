@@ -14,7 +14,6 @@ const MIN_DOMAIN_WIDTH := 0.1
 
 @onready var formula_list: VBoxContainer = %FormulaList
 @onready var add_button: Button = %AddFormulaButton
-@onready var lock_label: Label = %LockLabel
 
 var template_id := "linear"
 var parameters: Dictionary = {}
@@ -47,7 +46,6 @@ func configure(level: Dictionary) -> void:
 		formulas.append(_make_formula(initial_template, initial_values, Vector2(_domain_min, _domain_max)))
 	_rebuild_all()
 	_set_expanded(0, false)
-	_update_lock_label()
 
 func set_details_expanded(expanded: bool) -> void:
 	if _entries.is_empty():
@@ -155,7 +153,6 @@ func set_locked(value: bool) -> void:
 		for field in entry.fields.values():
 			field.spin.editable = not value
 			field.slider.editable = not value
-	_update_lock_label()
 
 func _rebuild_all(expand_index: int = -1) -> void:
 	var was_expanded: Array = []
@@ -182,11 +179,16 @@ func _rebuild_all(expand_index: int = -1) -> void:
 func _build_entry(index: int) -> Dictionary:
 	var formula: Dictionary = formulas[index]
 	var card := PanelContainer.new()
-	card.add_theme_stylebox_override("panel", UITheme.panel(Color.WHITE, 5, Color("e1e4ea")))
+	var card_style := UITheme.panel(Color.WHITE, 5, Color("e1e4ea"))
+	card_style.content_margin_left = 0
+	card_style.content_margin_right = 0
+	card_style.content_margin_top = 0
+	card_style.content_margin_bottom = 0
+	card.add_theme_stylebox_override("panel", card_style)
 	formula_list.add_child(card)
 	var margin := MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 12)
-	margin.add_theme_constant_override("margin_right", 10)
+	margin.add_theme_constant_override("margin_right", 6)
 	margin.add_theme_constant_override("margin_top", 10)
 	margin.add_theme_constant_override("margin_bottom", 12)
 	card.add_child(margin)
@@ -230,7 +232,7 @@ func _build_entry(index: int) -> Dictionary:
 	header.add_child(remove_button)
 
 	var details_margin := MarginContainer.new()
-	details_margin.add_theme_constant_override("margin_left", 32)
+	details_margin.add_theme_constant_override("margin_left", 20)
 	details_margin.add_theme_constant_override("margin_top", 2)
 	box.add_child(details_margin)
 	var details := VBoxContainer.new()
@@ -247,13 +249,6 @@ func _build_entry(index: int) -> Dictionary:
 		picker.set_item_metadata(picker.item_count - 1, id)
 	picker.select(maxi(0, _available.find(formula.template)))
 	details.add_child(picker)
-
-	var description := Label.new()
-	description.text = Catalog.TEMPLATES[formula.template].description
-	description.add_theme_color_override("font_color", Color("81858c"))
-	description.add_theme_font_size_override("font_size", 13)
-	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	details.add_child(description)
 
 	var parameter_list := VBoxContainer.new()
 	parameter_list.add_theme_constant_override("separation", 13)
@@ -308,7 +303,7 @@ func _build_entry(index: int) -> Dictionary:
 	from_label.add_theme_color_override("font_color", Color("81858c"))
 	domain_row.add_child(from_label)
 	var min_spin := SpinBox.new()
-	min_spin.custom_minimum_size = Vector2(92, 32)
+	min_spin.custom_minimum_size = Vector2(84, 32)
 	min_spin.min_value = _domain_min
 	min_spin.max_value = _domain_max
 	min_spin.step = DOMAIN_STEP
@@ -322,7 +317,7 @@ func _build_entry(index: int) -> Dictionary:
 	to_label.add_theme_color_override("font_color", Color("81858c"))
 	domain_row.add_child(to_label)
 	var max_spin := SpinBox.new()
-	max_spin.custom_minimum_size = Vector2(92, 32)
+	max_spin.custom_minimum_size = Vector2(84, 32)
 	max_spin.min_value = _domain_min
 	max_spin.max_value = _domain_max
 	max_spin.step = DOMAIN_STEP
@@ -330,17 +325,10 @@ func _build_entry(index: int) -> Dictionary:
 	max_spin.update_on_text_changed = false
 	max_spin.get_line_edit().alignment = HORIZONTAL_ALIGNMENT_CENTER
 	domain_row.add_child(max_spin)
-	var domain_note := Label.new()
-	domain_note.text = "定义域外的部分不参与轨道。"
-	domain_note.add_theme_font_size_override("font_size", 11)
-	domain_note.add_theme_color_override("font_color", Color("9a9da4"))
-	details.add_child(domain_note)
-
 	var entry := {
 		"card": card,
 		"details": details_margin,
 		"picker": picker,
-		"description": description,
 		"parameter_list": parameter_list,
 		"expression": expression,
 		"expand_button": expand_button,
@@ -498,9 +486,6 @@ func _validate_formula(formula: Dictionary) -> String:
 	if formula.domain.y - formula.domain.x < MIN_DOMAIN_WIDTH:
 		return "定义域的上下界至少相差 %.1f。" % MIN_DOMAIN_WIDTH
 	return ""
-
-func _update_lock_label() -> void:
-	lock_label.text = "运行中，重试后可继续调整。" if _locked else "拖动滑条或输入数值；按 Enter 确认。"
 
 func _number(value: float) -> String:
 	var text := ("%.2f" % value).rstrip("0").rstrip(".")

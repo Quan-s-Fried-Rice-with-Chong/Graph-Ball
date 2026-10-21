@@ -92,6 +92,23 @@ static func create() -> Theme:
 		track.content_margin_top = 1.5
 		track.content_margin_bottom = 1.5
 		theme.set_stylebox(state, "HSlider", track)
+	for type in ["VScrollBar", "HScrollBar"]:
+		for state in ["scroll", "grabber", "grabber_highlight", "grabber_pressed"]:
+			var color := Color(0, 0, 0, 0)
+			if state == "grabber":
+				color = Color("d9dee7")
+			elif state == "grabber_highlight":
+				color = Color("c6cedb")
+			elif state == "grabber_pressed":
+				color = Color("b3bcca")
+			var bar := flat(color)
+			bar.content_margin_left = 3
+			bar.content_margin_right = 3
+			bar.content_margin_top = 3
+			bar.content_margin_bottom = 3
+			if state != "scroll":
+				bar.set_corner_radius_all(3)
+			theme.set_stylebox(state, type, bar)
 	theme.set_stylebox("panel", "PopupMenu", panel())
 	theme.set_stylebox("hover", "PopupMenu", flat(Color("eef1f8")))
 	theme.set_color("font_color", "PopupMenu", INK)
