@@ -4,7 +4,7 @@
 
 ## 启动
 
-使用 Godot 4.7.2 导入本目录的 `project.godot`，按 F5 运行工程。启动场景为 `scenes/main.tscn`。仓库中的 `shuweitanqiu` 目录是未改动的 B 侧界面参考工程。
+使用 Godot 4.7.2 导入本目录的 `project.godot`，按 F5 运行工程。启动场景为 `scenes/main.tscn`。
 
 也可以在项目目录通过命令行启动：
 

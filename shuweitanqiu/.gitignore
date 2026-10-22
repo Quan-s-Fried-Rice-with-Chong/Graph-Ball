@@ -1,8 +1,0 @@
-# Godot 4+ specific ignores
-.godot/
-/android/
-
-# Local QA captures and disposable test settings.
-.qa/
-artifacts/
-tests/.test_progress.cfg

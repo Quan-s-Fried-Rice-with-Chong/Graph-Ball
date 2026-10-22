@@ -1,3 +1,6 @@
+# Local tool configuration
+opencode.json
+
 # Godot 4+ specific ignores
 .godot/
 /android/
