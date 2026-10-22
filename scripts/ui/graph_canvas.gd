@@ -184,14 +184,32 @@ func _draw() -> void:
 	draw_circle(ball_screen + Vector2(-ball_radius * 0.25, -ball_radius * 0.25), ball_radius * 0.24, Color("a6bfdc"))
 
 func _draw_curves(segments: Array, color: Color, width: float) -> void:
+	var points := PackedVector2Array()
+	var run_color := color
+	var run_key := ""
+	var last_end := Vector2.ZERO
 	for segment in segments:
 		if segment is Dictionary:
 			var actual_color: Color = segment.color if color.a > 0.9 else color
-			draw_line(world_to_screen(segment.a), world_to_screen(segment.b), actual_color, width, true)
-			# Capsules use round ends; match the collider silhouette.
-			draw_circle(world_to_screen(segment.a), width * 0.5, actual_color)
-			draw_circle(world_to_screen(segment.b), width * 0.5, actual_color)
+			var key := String(segment.get("formula_id", segment.get("type", "")))
+			var from := world_to_screen(segment.a)
+			var to := world_to_screen(segment.b)
+			if points.is_empty():
+				points.append(from)
+				points.append(to)
+				run_color = actual_color
+				run_key = key
+			elif key == run_key and actual_color == run_color and last_end.distance_squared_to(from) <= 0.01:
+				points.append(to)
+			else:
+				_flush_curve(points, run_color, width)
+				points = PackedVector2Array([from, to])
+				run_color = actual_color
+				run_key = key
+			last_end = to
 			continue
+		_flush_curve(points, run_color, width)
+		points = PackedVector2Array()
 		if segment.size() < 2:
 			continue
 		var screen_points := PackedVector2Array()
@@ -213,6 +231,16 @@ func _draw_curves(segments: Array, color: Color, width: float) -> void:
 			screen_points.append(to)
 		if screen_points.size() > 1:
 			draw_polyline(screen_points, color, width, true)
+	if points.size() > 1:
+		_flush_curve(points, run_color, width)
+
+func _flush_curve(points: PackedVector2Array, color: Color, width: float) -> void:
+	if points.size() < 2:
+		return
+	draw_polyline(points, color, width, true)
+	# Capsules use round ends; keep the silhouette without per-segment circles.
+	draw_circle(points[0], width * 0.5, color)
+	draw_circle(points[-1], width * 0.5, color)
 
 func clip_segment_to_bounds(from: Vector2, to: Vector2) -> PackedVector2Array:
 	var delta := to - from
