@@ -4,12 +4,12 @@
 
 ## 启动
 
-使用 Godot 4.7.2 导入本目录的 `project.godot`，按 F5 运行工程。启动场景为 `scenes/main.tscn`。产品名与窗口名已改为“数维弹球”；目录保留“数与球”。相邻的 `shuweitanqiu` 是未改动的 B 参考工程。
+使用 Godot 4.7.2 导入本目录的 `project.godot`，按 F5 运行工程。启动场景为 `scenes/main.tscn`。仓库中的 `shuweitanqiu` 目录是未改动的 B 侧界面参考工程。
 
-本机 PowerShell 可直接运行：
+也可以在项目目录通过命令行启动：
 
-```powershell
-& 'C:\Users\86135\Desktop\Godot_v4.7.2-stable_win64.exe' --path 'C:\Users\86135\Desktop\gametest\数与球'
+```text
+godot --path .
 ```
 
 ## 操作与规则
@@ -52,22 +52,15 @@
 
 在本目录执行：
 
-```powershell
-& 'C:\Users\86135\Desktop\Godot_v4.7.2-stable_win64.exe' --headless --path . --fixed-fps 120 --script res://tests/core_smoke_test.gd
-& 'C:\Users\86135\Desktop\Godot_v4.7.2-stable_win64.exe' --headless --path . --fixed-fps 120 --script res://tests/runtime_smoke_test.gd
+```text
+godot --headless --path . --fixed-fps 120 --script res://tests/core_smoke_test.gd
+godot --headless --path . --fixed-fps 120 --script res://tests/runtime_smoke_test.gd
 ```
 
 退出码 0 且日志 PASS 为通过；测试使用专用测试存档路径。Windows 日志采集可用 `Start-Process -Wait -PassThru -WindowStyle Hidden` 加标准输出/错误重定向。截图脚本为 `tests/visual_review.gd`，需实际图形渲染，结算截图为展示构造，四关通关证据以运行测试为准。
 
 独立安装包、Web 导出、其他平台与浏览器物理一致性尚未验收。复杂曲线的碰撞形状数量随采样增长；增加高频函数前需评估采样精度与性能。
 
-## 协作资料
+## 项目资料
 
-素材包位于 `C:\Users\86135\Desktop\素材包`：
-
-- `TECHNICAL-DESIGN-v1.0.md`：最终规范。
-- `数维弹球-技术设计-v1.0.html`：同源离线阅读版；旧 HTML 文件名同步保留兼容副本。
-- `CHANGELOG.md`：最新合并记录、接口影响与历史决策。
-- `DESIGN-CHECKLIST.md`、`formula-track-demo.html`：历史清单与交互原型，不覆盖最终规则。
-
-修改规范后在素材包执行 `node .analysis/build_technical_doc.js` 重新生成 HTML，并把协作变更记入更新日志。
+仓库根目录中的 `DESIGN-CHECKLIST.md` 和 `DESIGN-CHECKLIST1.md` 是项目设计过程中的历史清单，仅供参考，不覆盖本 README 描述的最终规则。
