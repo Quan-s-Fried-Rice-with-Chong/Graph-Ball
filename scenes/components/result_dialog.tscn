@@ -1,0 +1,79 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/result_dialog.gd" id="1"]
+
+[node name="ResultDialog" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Shade" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.1, 0.17, 0.26, 0.25)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Card" type="PanelContainer" parent="Center"]
+custom_minimum_size = Vector2(500, 0)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="Center/Card"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 20
+
+[node name="Content" type="VBoxContainer" parent="Center/Card/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 22
+
+[node name="ResultHeading" type="Label" parent="Center/Card/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "轨道接通！"
+
+[node name="ResultReason" type="Label" parent="Center/Card/Margin/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+text = ""
+autowrap_mode = 3
+
+[node name="ResultSummary" type="Label" parent="Center/Card/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.44, 0.5, 0.59, 1)
+theme_override_font_sizes/font_size = 16
+text = "用时  0.00 s"
+
+[node name="RetryResultButton" type="Button" parent="Center/Card/Margin/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "保留参数，继续调整"
+
+[node name="NextButton" type="Button" parent="Center/Card/Margin/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+text = "下一关  →"
+
+[node name="ResultLevelsButton" type="Button" parent="Center/Card/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "关卡选择"
+flat = true

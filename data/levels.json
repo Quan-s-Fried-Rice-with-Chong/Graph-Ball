@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "levels": [
+    {
+      "id":"first_line", "title":"第一条轨道", "concept":"一次函数 · 斜率与方向", "objective":"调整直线，让小球经过金色检查点后抵达终点。", "hint":"先让球自由落上轨道，再用向右下倾斜的直线引导它。",
+      "bounds":[-9,-5,20,13], "start":[-7.35,4.242], "goal":[6.15,-1.72], "ball_radius":0.28, "goal_radius":0.7, "checkpoint_radius":0.45, "time_limit":25, "max_formulas":3,
+      "templates":["linear"], "checkpoints":[[0,1.2]], "obstacles":[], "circle_hazards":[],
+      "initial_formulas":[{"template":"linear","parameters":{"a":-0.2,"b":0.8},"domain":[-8.6,8.5]}],
+      "reference_formulas":[{"template":"linear","parameters":{"a":-0.42,"b":0.8},"domain":[-8.6,8.5]}]
+    },
+    {
+      "id":"quiet_valley", "title":"绕开红区", "concept":"二次函数 · 开口与顶点", "objective":"借助抛物线的真实弹性，避开红色危险区并收集检查点。", "hint":"金色抛物线有弹性。改变开口和顶点位置，观察落下后的反弹与滚动。",
+      "bounds":[-9,-5,20,14], "start":[-7,7], "goal":[5,-0.5], "ball_radius":0.28, "goal_radius":0.7, "checkpoint_radius":0.5, "time_limit":30, "max_formulas":3,
+      "templates":["linear","quadratic"], "checkpoints":[[-4,2.8],[1,-0.1]], "obstacles":[[-2,-3,2,2]], "circle_hazards":[[7,4,0.6]],
+      "initial_formulas":[{"template":"quadratic","parameters":{"a":0.02,"h":2,"k":0},"domain":[-8.5,10]}],
+      "reference_formulas":[{"template":"quadratic","parameters":{"a":0.04,"h":4,"k":-1},"domain":[-8.5,10]}]
+    },
+    {
+      "id":"wave_walk", "title":"随波前行", "concept":"正弦函数 · 波长与平移", "objective":"利用正弦曲线的下降段，引导小球穿过检查点。", "hint":"正弦参数 b 控制波长，h 控制左右位置。小球有惯性，曲线不能直接拖着球走。",
+      "bounds":[-5,-5,18,13], "start":[2,5], "goal":[8,-0.8], "ball_radius":0.28, "goal_radius":0.7, "checkpoint_radius":0.5, "time_limit":30, "max_formulas":3,
+      "templates":["linear","sine"], "checkpoints":[[4,1.7],[6.5,0.4]], "obstacles":[], "circle_hazards":[[10,3,0.7]],
+      "initial_formulas":[{"template":"sine","parameters":{"a":1,"b":0.3,"h":-2,"k":0},"domain":[-4,12]}],
+      "reference_formulas":[{"template":"sine","parameters":{"a":2,"b":0.3,"h":-4,"k":0},"domain":[-4,12]}]
+    },
+    {
+      "id":"choose_your_way", "title":"选择你的解法", "concept":"组合轨道 · 自由飞跃", "objective":"组合多段轨道，越过空隙并以任意顺序收集全部检查点。", "hint":"最多三条函数，所有轨道同时参与碰撞。轨道之间可以留空隙，让小球自由飞行后再次落上轨道。",
+      "bounds":[-9,-6,21,15], "start":[-7,5], "goal":[8,-2.5], "ball_radius":0.28, "goal_radius":0.7, "checkpoint_radius":0.5, "time_limit":30, "max_formulas":3,
+      "templates":["linear","quadratic","sine"], "checkpoints":[[-3,2.6],[4,-1.6],[7,-2.4]], "obstacles":[[-0.8,4,2,1]], "circle_hazards":[],
+      "initial_formulas":[{"template":"linear","parameters":{"a":-0.15,"b":1},"domain":[-8,-1]}],
+      "reference_formulas":[{"template":"linear","parameters":{"a":-0.4,"b":1},"domain":[-8,-1]},{"template":"linear","parameters":{"a":-0.25,"b":-1},"domain":[-0.2,10]}]
+    }
+  ]
+}

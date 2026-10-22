@@ -1,0 +1,7 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+REFERENCE_PASS first_line time=9.3333 formulas=1
+REFERENCE_PASS quiet_valley time=4.8167 formulas=1
+REFERENCE_PASS wave_walk time=6.7333 formulas=1
+REFERENCE_PASS choose_your_way time=12.8917 formulas=2
+RUNTIME_SMOKE_TEST: PASS (54 assertions)

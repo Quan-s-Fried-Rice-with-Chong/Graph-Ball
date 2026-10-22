@@ -1,0 +1,23 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/core/level_controller.gd" id="1_controller"]
+[ext_resource type="Script" path="res://scripts/core/game_world.gd" id="2_world"]
+[ext_resource type="Script" path="res://scripts/core/track_builder.gd" id="3_track"]
+[ext_resource type="Script" path="res://scripts/core/ball_controller.gd" id="4_ball"]
+
+[node name="Main" type="Node"]
+script = ExtResource("1_controller")
+
+[node name="GameWorld" type="Node2D" parent="."]
+visible = false
+script = ExtResource("2_world")
+
+[node name="TrackBuilder" type="Node2D" parent="GameWorld"]
+script = ExtResource("3_track")
+
+[node name="Ball" type="RigidBody2D" parent="GameWorld"]
+freeze = true
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("4_ball")
+
