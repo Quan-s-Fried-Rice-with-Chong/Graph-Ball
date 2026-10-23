@@ -33,7 +33,7 @@ window/size/min_height=720
 
 common/physics_ticks_per_second=120
 3d/physics_engine="Jolt Physics"
-2d/default_gravity=153.6
+2d/default_gravity=384
 
 [rendering]
 

@@ -4,8 +4,8 @@ extends RefCounted
 const WORLD_SCALE := 48.0
 const BALL_RADIUS := 0.28
 const TRACK_HALF_THICKNESS := 0.075
-const GRAVITY := 3.2
-const MAX_SPEED := 16.0
+const GRAVITY := 8
+const MAX_SPEED := 40.0
 const SAMPLE_STEP := 0.1
 const MAX_SAMPLE_POINTS := 600
 const MAX_FORMULAS := 3
