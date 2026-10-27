@@ -5,23 +5,55 @@ signal tracks_rebuilt(segments: Array)
 
 var track_segments: Array = []
 var world_scale := GameConstants.WORLD_SCALE
+var preview_rebuild_count := 0
+var collider_rebuild_count := 0
+var collision_shape_count := 0
 
 func rebuild(formulas: Array, boundary: PackedVector2Array) -> void:
-	clear()
+	track_segments = _sample_tracks(formulas, boundary)
+	_clear_bodies()
+	collider_rebuild_count += 1
+	collision_shape_count = 0
 	for formula_source in formulas:
 		var formula := FormulaModel.normalized(formula_source)
-		var segments := CurveSampler.sample(formula, boundary)
-		track_segments.append_array(segments)
+		var segments := _segments_for_formula(formula["id"])
 		_build_formula_body(formula, segments)
-	queue_redraw()
-	tracks_rebuilt.emit(track_segments.duplicate(true))
+	_publish_tracks()
+
+func preview(formulas: Array, boundary: PackedVector2Array) -> void:
+	track_segments = _sample_tracks(formulas, boundary)
+	_clear_bodies()
+	preview_rebuild_count += 1
+	collision_shape_count = 0
+	_publish_tracks()
 
 func clear() -> void:
 	track_segments.clear()
+	_clear_bodies()
+	collision_shape_count = 0
+	_publish_tracks()
+
+func _clear_bodies() -> void:
 	for child in get_children():
 		remove_child(child)
 		child.queue_free()
+
+func _sample_tracks(formulas: Array, boundary: PackedVector2Array) -> Array:
+	var result: Array = []
+	for formula_source in formulas:
+		result.append_array(CurveSampler.sample(formula_source, boundary))
+	return result
+
+func _segments_for_formula(formula_id: String) -> Array:
+	var result: Array = []
+	for segment in track_segments:
+		if segment["formula_id"] == formula_id:
+			result.append(segment)
+	return result
+
+func _publish_tracks() -> void:
 	queue_redraw()
+	tracks_rebuilt.emit(track_segments.duplicate(true))
 
 func _build_formula_body(formula: Dictionary, segments: Array) -> void:
 	if segments.is_empty():
@@ -56,6 +88,7 @@ func _build_formula_body(formula: Dictionary, segments: Array) -> void:
 		collision_shape.rotation = direction.angle() - PI * 0.5
 		collision_shape.shape = shape
 		body.add_child(collision_shape)
+		collision_shape_count += 1
 
 func world_to_local_screen(point: Vector2) -> Vector2:
 	return Vector2(point.x * world_scale, -point.y * world_scale)

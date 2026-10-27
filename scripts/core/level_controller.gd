@@ -47,7 +47,7 @@ func load_level(index: int) -> bool:
 	var candidate := LevelData.get_level(current_level_index)
 	return configure_level(candidate)
 
-func configure_level(candidate: Dictionary) -> bool:
+func configure_level(candidate: Dictionary, build_colliders: bool = true) -> bool:
 	var level_result := LevelData.validate(candidate)
 	if not level_result["ok"]:
 		validation_failed.emit(level_result["errors"])
@@ -58,14 +58,14 @@ func configure_level(candidate: Dictionary) -> bool:
 	elapsed_time = 0.0
 	time_left = float(current_level["time_limit"])
 	failure_reason = ""
-	game_world.configure_level(current_level, formulas)
+	game_world.configure_level(current_level, formulas, build_colliders)
 	level_loaded.emit(current_level.duplicate(true))
 	formula_list_changed.emit(formulas.duplicate(true))
 	status_changed.emit(status_name())
 	editing_lock_changed.emit(false)
 	return true
 
-func set_formulas(next_formulas: Array) -> bool:
+func set_formulas(next_formulas: Array, build_colliders: bool = true, update_tracks: bool = true) -> bool:
 	if state != RunState.EDITING:
 		return false
 	var result := FormulaValidator.validate(next_formulas, current_level)
@@ -73,7 +73,11 @@ func set_formulas(next_formulas: Array) -> bool:
 		validation_failed.emit(result["errors"])
 		return false
 	formulas = result["formulas"]
-	game_world.rebuild_tracks(formulas)
+	if update_tracks:
+		if build_colliders:
+			game_world.rebuild_tracks(formulas)
+		else:
+			game_world.preview_tracks(formulas)
 	formula_list_changed.emit(formulas.duplicate(true))
 	return true
 

@@ -13,8 +13,8 @@ func _ready() -> void:
 	gravity_scale = 1.0
 	lock_rotation = false
 	continuous_cd = RigidBody2D.CCD_MODE_CAST_RAY
-	contact_monitor = true
-	max_contacts_reported = 8
+	contact_monitor = false
+	max_contacts_reported = 0
 	linear_damp = 0.02
 	angular_damp = 0.08
 	_build_collision_shape()

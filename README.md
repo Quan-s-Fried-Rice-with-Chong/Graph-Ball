@@ -55,11 +55,14 @@ godot --path .
 ```text
 godot --headless --path . --fixed-fps 120 --script res://tests/core_smoke_test.gd
 godot --headless --path . --fixed-fps 120 --script res://tests/runtime_smoke_test.gd
+godot --headless --path . --fixed-fps 120 --script res://tests/elasticity_performance_test.gd
 ```
 
 退出码 0 且日志 PASS 为通过；测试使用专用测试存档路径。Windows 日志采集可用 `Start-Process -Wait -PassThru -WindowStyle Hidden` 加标准输出/错误重定向。截图脚本为 `tests/visual_review.gd`，需实际图形渲染，结算截图为展示构造，四关通关证据以运行测试为准。
 
 独立安装包、Web 导出、其他平台与浏览器物理一致性尚未验收。复杂曲线的碰撞形状数量随采样增长；增加高频函数前需评估采样精度与性能。
+
+编辑参数时只生成曲线预览，点击运行后才建立物理碰撞体；物理以 120 Hz 运行，画布动态状态最多以 60 Hz 更新。二次轨道默认回弹 0.80、摩擦 0.08，直线与正弦轨道保持无回弹。
 
 ## 项目资料
 

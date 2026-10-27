@@ -13,8 +13,8 @@
 | 方法 | 返回 | 行为 |
 | --- | --- | --- |
 | configure_formulas(data: Dictionary, sources: Array) | void | 传入仓库已转换的关卡与 UI 公式，配置核心，清空旧结果 |
-| update_formulas(sources: Array) | bool | 编辑时整体替换；成功重建曲线，失败发校验信号；运行/暂停拒绝 |
-| start() | bool | 仅 editing 可启动；执行核心校验 |
+| update_formulas(sources: Array) | bool | 编辑时整体替换；同一渲染帧内的连续输入合并为一次无碰撞体预览；运行/暂停拒绝 |
+| start() | bool | 仅 editing 可启动；刷新待处理输入并一次性建立物理碰撞体 |
 | retry() | void | 保留公式和定义域，回编辑态，清空球、计时与检查点 |
 | pause_or_resume() | void | 运行/暂停互换；其他状态不启动 |
 
@@ -32,6 +32,8 @@
 | validation_failed(message: String) | 可展示的错误文本，可能含换行 |
 
 适配器公开只读用途的状态：level、formulas、state、elapsed、reached、ball_position、last_result。调用方不要直接写入。run_finished 延迟到物理查询结束发送，运行代次过期则丢弃，避免切关后出现旧弹层。
+
+核心物理保持 120 Hz；适配器保存每个物理步的最新状态，但 `ball_moved` 最多按 60 Hz 推送给画布。检查点数组只在内容变化、重试、切关或结算时重新发送。
 
 | result 字段 | 类型 / 含义 |
 | --- | --- |

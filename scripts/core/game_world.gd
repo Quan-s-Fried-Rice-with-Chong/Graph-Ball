@@ -18,17 +18,24 @@ var world_scale := GameConstants.WORLD_SCALE
 @onready var track_builder: TrackBuilder = $TrackBuilder
 @onready var ball: BallController = $Ball
 
-func configure_level(data: Dictionary, current_formulas: Array) -> void:
+func configure_level(data: Dictionary, current_formulas: Array, build_colliders: bool = true) -> void:
 	level = data.duplicate(true)
 	boundary = level.boundary
 	track_builder.world_scale = world_scale
 	ball.configure(world_scale)
-	rebuild_tracks(current_formulas)
+	if build_colliders:
+		rebuild_tracks(current_formulas)
+	else:
+		preview_tracks(current_formulas)
 	reset_ball()
 
 func rebuild_tracks(current_formulas: Array) -> void:
 	formulas = current_formulas.duplicate(true)
 	track_builder.rebuild(formulas, boundary)
+
+func preview_tracks(current_formulas: Array) -> void:
+	formulas = current_formulas.duplicate(true)
+	track_builder.preview(formulas, boundary)
 
 func reset_ball() -> void:
 	running = false

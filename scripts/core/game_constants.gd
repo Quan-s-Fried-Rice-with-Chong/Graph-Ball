@@ -23,8 +23,8 @@ const MATERIALS := {
 	},
 	MODULE_SINE: {"restitution": 0.0, "friction": 0.25, "color": Color("8b70b8"), "label": "波浪材质"},
 	MODULE_QUADRATIC: {
-		"restitution": 0.65,
-		"friction": 0.10,
+		"restitution": 0.80,
+		"friction": 0.08,
 		"color": Color("ffc45c"),
 		"label": "弹性材质",
 	},
