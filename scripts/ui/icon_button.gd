@@ -16,9 +16,9 @@ func _ready() -> void:
 	toggled.connect(func(_value: bool): queue_redraw())
 
 func _draw() -> void:
-	var color := Color("4968b5") if highlighted else Color("62666e")
+	var color := Color("6ee0c7") if highlighted else Color("b8c3cf")
 	if disabled:
-		color = Color("c5c8ce")
+		color = Color("46596b")
 	var c := size * 0.5
 	match symbol:
 		"play":

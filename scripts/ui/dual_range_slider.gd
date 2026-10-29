@@ -4,11 +4,11 @@ signal range_changed(low: float, high: float)
 
 const HANDLE_RADIUS := 7.0
 const SIDE_PADDING := 12.0
-const TRACK_COLOR := Color("dfe3ea")
-const ACTIVE_COLOR := Color("8e9fc9")
-const HANDLE_COLOR := Color("ffffff")
-const HANDLE_BORDER := Color("4968b5")
-const DISABLED_COLOR := Color("c6ccd6")
+const TRACK_COLOR := Color("1a2b3b")
+const ACTIVE_COLOR := Color("4eb9a5")
+const HANDLE_COLOR := Color("f2eee4")
+const HANDLE_BORDER := Color("6ee0c7")
+const DISABLED_COLOR := Color("334658")
 
 var min_value := -9.0
 var max_value := 11.0
@@ -118,7 +118,7 @@ func _draw() -> void:
 	for i in range(2):
 		var point := Vector2(low_x if i == 0 else high_x, track.get_center().y)
 		var radius := HANDLE_RADIUS + (1.5 if _hovered == i or _dragging == i else 0.0)
-		draw_circle(point + Vector2(0, 1), radius + 1.0, Color(0.18, 0.22, 0.29, 0.12))
+		draw_circle(point + Vector2(0, 1), radius + 1.5, Color(0, 0, 0, 0.28))
 		draw_circle(point, radius, HANDLE_COLOR)
 		draw_arc(point, radius, 0, TAU, 28, border, 2.0, true)
 	if has_focus():

@@ -95,20 +95,18 @@ func _run() -> void:
 			check(not ui.adapter.update_formulas(ui.levels[i].initial_formulas), "Pause prevents editing")
 			ui.adapter.pause_or_resume()
 			check(is_equal_approx(ui.adapter.core.game_world.ball.angular_velocity, spin), "Resume restores spin")
-		var pending_frames := 0
 		for frame in 4200:
 			await physics_frame
-			if ui.adapter.core.success_pending:
-				pending_frames += 1
 			if ui.adapter.state != "running":
 				break
 		await process_frame
 		await process_frame
 		check(ui.adapter.state == "success", "Reference wins: " + ui.levels[i].id)
 		check(ui.adapter.reached.count(true) == ui.adapter.reached.size(), "All checkpoints")
-		check(pending_frames >= 90, "Success waits before showing result")
-		check(ui.adapter.core.game_world.running and not ui.adapter.core.game_world.ball.freeze, "Success keeps ball moving")
+		check(not ui.adapter.core.game_world.running and ui.adapter.core.game_world.ball.freeze, "Success freezes ball immediately")
 		check(ui.result_dialog.visible, "Result visible")
+		check(ui.result_dialog.summary.text.split("\n").size() == 4, "Result summary has four rows")
+		check(not ui.result_dialog.summary.text.contains("检查点") and not ui.result_dialog.summary.text.contains("公式越少"), "Result summary is concise")
 		check(ui.adapter.last_result.saved, "Saved progress")
 		check(ui.unlocked_level == mini(i+1, ui.levels.size()-1), "Next unlock")
 		print("REFERENCE_PASS %s time=%.4f formulas=%d" % [ui.levels[i].id, ui.adapter.elapsed, ui.adapter.formulas.size()])

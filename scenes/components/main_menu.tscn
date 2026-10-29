@@ -1,16 +1,9 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=5 format=3]
+
 [ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/menu_sketch.gd" id="2"]
-[ext_resource type="Script" path="res://scripts/ui/digit_wall.gd" id="3"]
-
-[sub_resource type="Gradient" id="Gradient_fade"]
-offsets = PackedFloat32Array(0, 0.38, 1)
-colors = PackedColorArray(0.969, 0.976, 0.988, 0.97, 0.969, 0.976, 0.988, 0.72, 0.969, 0.976, 0.988, 0.15)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture_fade"]
-gradient = SubResource("Gradient_fade")
-fill_from = Vector2(0, 0.5)
-fill_to = Vector2(1, 0.5)
+[ext_resource type="Script" path="res://scripts/ui/menu_action.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/ui/art_title.gd" id="4"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -26,105 +19,198 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.969, 0.976, 0.988, 1)
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
+color = Color(0.027, 0.063, 0.102, 1)
 
-[node name="DigitWall" type="Control" parent="."]
+[node name="Artwork" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 clip_contents = true
-script = ExtResource("3")
-
-[node name="ReadingFade" type="TextureRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-texture = SubResource("GradientTexture_fade")
-expand_mode = 1
-
-[node name="Sketch" type="Control" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
 script = ExtResource("2")
 
-[node name="HeaderMargin" type="MarginContainer" parent="."]
+[node name="SafeArea" type="MarginContainer" parent="."]
 layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
-offset_bottom = 66.0
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_right = 26
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 58
+theme_override_constants/margin_top = 42
+theme_override_constants/margin_right = 58
+theme_override_constants/margin_bottom = 32
 
-[node name="Header" type="HBoxContainer" parent="HeaderMargin"]
+[node name="Layout" type="VBoxContainer" parent="SafeArea"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 0
 
-[node name="Mark" type="Label" parent="HeaderMargin/Header"]
+[node name="Header" type="HBoxContainer" parent="SafeArea/Layout"]
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.286, 0.408, 0.71, 1)
-theme_override_font_sizes/font_size = 36
+theme_override_constants/separation = 11
+
+[node name="BrandMark" type="Label" parent="SafeArea/Layout/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.431, 0.878, 0.78, 1)
+theme_override_font_sizes/font_size = 31
 text = "∿"
+vertical_alignment = 1
 
-[node name="Brand" type="Label" parent="HeaderMargin/Header"]
+[node name="Brand" type="Label" parent="SafeArea/Layout/Header"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "数维弹球"
+theme_override_colors/font_color = Color(0.949, 0.933, 0.894, 0.92)
+theme_override_font_sizes/font_size = 12
+text = "S H U W E I   P I N B A L L"
+vertical_alignment = 1
 
-[node name="Space" type="Control" parent="HeaderMargin/Header"]
+[node name="HeaderSpace" type="Control" parent="SafeArea/Layout/Header"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Content" type="VBoxContainer" parent="."]
-layout_mode = 1
-anchor_left = 0.14
-anchor_top = 0.30
-anchor_right = 0.47
-anchor_bottom = 0.82
-theme_override_constants/separation = 14
-
-[node name="Title" type="Label" parent="Content"]
+[node name="Build" type="Label" parent="SafeArea/Layout/Header"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 50
-text = "数维弹球"
+theme_override_colors/font_color = Color(0.522, 0.576, 0.647, 0.82)
+theme_override_font_sizes/font_size = 10
+text = "07 LEVELS   /   BUILD 1.0.0"
+vertical_alignment = 1
 
-[node name="Description" type="Label" parent="Content"]
+[node name="HeaderRule" type="ColorRect" parent="SafeArea/Layout"]
+custom_minimum_size = Vector2(0, 1)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.51, 0.52, 0.55, 1)
-theme_override_font_sizes/font_size = 18
-text = "调整曲线，把小球送到终点。"
+color = Color(0.659, 0.788, 0.804, 0.1)
 
-[node name="Spacer" type="Control" parent="Content"]
-custom_minimum_size = Vector2(0, 22)
+[node name="Body" type="HBoxContainer" parent="SafeArea/Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 30
+
+[node name="MenuColumn" type="VBoxContainer" parent="SafeArea/Layout/Body"]
+custom_minimum_size = Vector2(500, 0)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TopSpace" type="Control" parent="SafeArea/Layout/Body/MenuColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Eyebrow" type="HBoxContainer" parent="SafeArea/Layout/Body/MenuColumn"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="AccentLine" type="ColorRect" parent="SafeArea/Layout/Body/MenuColumn/Eyebrow"]
+custom_minimum_size = Vector2(29, 2)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.431, 0.878, 0.78, 0.9)
+
+[node name="Label" type="Label" parent="SafeArea/Layout/Body/MenuColumn/Eyebrow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.522, 0.576, 0.647, 1)
+theme_override_font_sizes/font_size = 12
+text = "函数  ·  轨道  ·  重力"
+
+[node name="EyebrowGap" type="Control" parent="SafeArea/Layout/Body/MenuColumn"]
+custom_minimum_size = Vector2(0, 16)
 layout_mode = 2
 
-[node name="StartMenuButton" type="Button" parent="Content"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(224, 48)
+[node name="ArtTitle" type="Control" parent="SafeArea/Layout/Body/MenuColumn"]
+custom_minimum_size = Vector2(500, 210)
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("4")
+
+[node name="TitleGap" type="Control" parent="SafeArea/Layout/Body/MenuColumn"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="TitleRule" type="ColorRect" parent="SafeArea/Layout/Body/MenuColumn"]
+custom_minimum_size = Vector2(500, 1)
 layout_mode = 2
 size_flags_horizontal = 0
-theme_type_variation = &"PrimaryButton"
-text = "开始游戏"
+color = Color(0.431, 0.878, 0.78, 0.24)
 
-[node name="MenuLevelsButton" type="Button" parent="Content"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(224, 44)
+[node name="MenuGap" type="Control" parent="SafeArea/Layout/Body/MenuColumn"]
+custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
-size_flags_horizontal = 0
-theme_type_variation = &"NavButton"
-text = "关卡选择"
 
-[node name="MenuHelpButton" type="Button" parent="Content"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(224, 44)
+[node name="Menu" type="VBoxContainer" parent="SafeArea/Layout/Body/MenuColumn"]
 layout_mode = 2
-size_flags_horizontal = 0
-theme_type_variation = &"NavButton"
-text = "教程文档"
+theme_override_constants/separation = 0
 
+[node name="StartMenuButton" type="Button" parent="SafeArea/Layout/Body/MenuColumn/Menu"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(440, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_default_cursor_shape = 2
+script = ExtResource("3")
+index_text = "01"
+title_text = "开始游戏"
+caption_text = "START"
+accent = Color(0.431, 0.878, 0.78, 1)
+
+[node name="MenuLevelsButton" type="Button" parent="SafeArea/Layout/Body/MenuColumn/Menu"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(440, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_default_cursor_shape = 2
+script = ExtResource("3")
+index_text = "02"
+title_text = "关卡选择"
+caption_text = "SELECT STAGE"
+accent = Color(0.431, 0.878, 0.78, 1)
+
+[node name="MenuHelpButton" type="Button" parent="SafeArea/Layout/Body/MenuColumn/Menu"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(440, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_default_cursor_shape = 2
+script = ExtResource("3")
+index_text = "03"
+title_text = "玩法说明"
+caption_text = "HOW TO PLAY"
+accent = Color(1, 0.471, 0.388, 1)
+
+[node name="BottomSpace" type="Control" parent="SafeArea/Layout/Body/MenuColumn"]
+layout_mode = 2
+size_flags_vertical = 2
+
+[node name="FooterGap" type="Control" parent="SafeArea/Layout"]
+custom_minimum_size = Vector2(0, 23)
+layout_mode = 2
+
+[node name="FooterRule" type="ColorRect" parent="SafeArea/Layout"]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+color = Color(0.659, 0.788, 0.804, 0.1)
+
+[node name="Footer" type="HBoxContainer" parent="SafeArea/Layout"]
+custom_minimum_size = Vector2(0, 25)
+layout_mode = 2
+
+[node name="Version" type="Label" parent="SafeArea/Layout/Footer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.522, 0.576, 0.647, 0.68)
+theme_override_font_sizes/font_size = 10
+text = "VERSION 1.0.0   /   2026"
+vertical_alignment = 2
+
+[node name="FooterSpace" type="Control" parent="SafeArea/Layout/Footer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Controls" type="Label" parent="SafeArea/Layout/Footer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.522, 0.576, 0.647, 0.68)
+theme_override_font_sizes/font_size = 10
+text = "空格  运行 / 暂停      R  重试      ESC  返回"
+vertical_alignment = 2

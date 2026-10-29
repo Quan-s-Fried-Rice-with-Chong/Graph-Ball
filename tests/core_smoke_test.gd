@@ -127,5 +127,16 @@ func _test_events() -> void:
 	world.level.goal.position = Vector2(0,8)
 	world.check_motion(Vector2(9,0), Vector2(11,0))
 	check(fails[0] == 2, "Center exits boundary")
+	world.level.checkpoints = []
+	world.level.hazards = []
+	world.level.goal = {"position": Vector2.ZERO, "radius": 0.5}
+	world.reset_ball()
+	world.check_motion(Vector2(-0.77,0), Vector2(-0.77,0))
+	check(wins[0] == 2, "Goal tangent alone does not win")
+	world.check_motion(Vector2(-0.77,0), Vector2(0,0))
+	check(wins[0] == 3, "Goal overlap wins")
+	check(not world.running and world.ball.freeze, "Goal freezes ball")
+	var frozen_position := world.ball_world_position()
+	check(frozen_position.distance_to(Vector2.ZERO) < 0.683, "Ball freezes after entering goal")
 	controller.queue_free()
 	await process_frame

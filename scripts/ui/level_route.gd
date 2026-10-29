@@ -47,10 +47,16 @@ func _layout_cards() -> void:
 	queue_redraw()
 
 func _draw() -> void:
+	for index in range(1, 8):
+		var x := size.x * float(index) / 8.0
+		draw_line(Vector2(x, 0), Vector2(x, size.y), Color(0.22, 0.37, 0.48, 0.16), 1.0, true)
+	for index in range(1, 3):
+		var y := size.y * float(index) / 3.0
+		draw_line(Vector2(0, y), Vector2(size.x, y), Color(0.22, 0.37, 0.48, 0.12), 1.0, true)
 	var columns := mini(4, cards.size())
 	for i in range(cards.size() - 1):
 		if (i + 1) % columns == 0:
 			continue
 		var from: Vector2 = cards[i].position + Vector2(cards[i].size.x, cards[i].size.y * 0.24)
 		var to: Vector2 = cards[i + 1].position + Vector2(0, cards[i + 1].size.y * 0.24)
-		draw_dashed_line(from, to, Color("aab8d0"), 2.0, 6.0, true)
+		draw_dashed_line(from, to, Color("3b5a70"), 2.0, 6.0, true)

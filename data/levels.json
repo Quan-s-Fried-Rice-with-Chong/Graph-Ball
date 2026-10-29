@@ -3,7 +3,7 @@
   "levels": [
     {
       "id":"tutorial_line", "title":"第一课 · 一线直达", "concept":"单条一次函数 · 认识函数栏", "objective":"只使用一条一次函数，让小球从起点滚到终点。", "hint":"先展开函数卡，再调整斜率、平移和定义域，把一条直线裁成合适的线段。",
-      "bounds":[-9,-5,20,13], "start":[-7,7], "goal":[5,-0.5], "ball_radius":0.28, "goal_radius":0.7, "checkpoint_radius":0.5, "time_limit":25, "max_formulas":1,
+      "bounds":[-9,-5,20,13], "start":[-7,7], "goal":[5,-0.5], "ball_radius":0.28, "goal_radius":0.495, "checkpoint_radius":0.354, "time_limit":25, "max_formulas":1,
       "templates":["linear"], "checkpoints":[], "obstacles":[], "circle_hazards":[],
       "initial_formulas":[{"template":"linear","parameters":{"a":-0.2,"b":4},"domain":[-8.5,10]}],
       "reference_formulas":[{"template":"linear","parameters":{"a":-0.567,"b":2.333},"domain":[-8.5,10]}],
@@ -19,7 +19,7 @@
     },
     {
       "id":"tutorial_piecewise", "title":"第二课 · 分段绕障", "concept":"两条一次函数 · 学会添加函数", "objective":"用两段一次函数绕开红色障碍，连接起点与终点。", "hint":"一条直线会穿过障碍。添加第二条函数，把左右两段分别调整到障碍下方。",
-      "bounds":[-9,-5,20,13], "start":[-7,7], "goal":[5,-0.5], "ball_radius":0.28, "goal_radius":0.7, "checkpoint_radius":0.5, "time_limit":30, "max_formulas":3,
+      "bounds":[-9,-5,20,13], "start":[-7,7], "goal":[5,-0.5], "ball_radius":0.28, "goal_radius":0.495, "checkpoint_radius":0.354, "time_limit":30, "max_formulas":3,
       "templates":["linear"], "checkpoints":[], "obstacles":[[-1.5,3,2,1.2]], "circle_hazards":[],
       "initial_formulas":[{"template":"linear","parameters":{"a":-0.625,"b":2.625},"domain":[-8.5,10]}],
       "reference_formulas":[{"template":"linear","parameters":{"a":-0.52,"b":1.12},"domain":[-8.5,-1.5]},{"template":"linear","parameters":{"a":-0.12,"b":0.16},"domain":[0.5,6]}],
@@ -35,7 +35,7 @@
     },
     {
       "id":"tutorial_parabola", "title":"第三课 · 一弧胜双线", "concept":"二次函数 · 选择模板与简洁度", "objective":"把两条直线换成一条二次函数，绕过障碍并抵达终点。", "hint":"展开函数后点击类型下拉框，选择二次函数。公式越少，通关后的简洁度评价越高。",
-      "bounds":[-9,-5,20,13], "start":[-7,7], "goal":[5,-0.5], "ball_radius":0.28, "goal_radius":0.7, "checkpoint_radius":0.5, "time_limit":30, "max_formulas":3,
+      "bounds":[-9,-5,20,13], "start":[-7,7], "goal":[5,-0.5], "ball_radius":0.28, "goal_radius":0.495, "checkpoint_radius":0.354, "time_limit":30, "max_formulas":3,
       "templates":["linear","quadratic"], "checkpoints":[], "obstacles":[[-1.5,3,2,1.2]], "circle_hazards":[],
       "initial_formulas":[{"template":"linear","parameters":{"a":-0.625,"b":2.625},"domain":[-8.5,10]}],
       "template_defaults":{"quadratic":{"a":0.05,"h":3,"k":-2}},
@@ -55,28 +55,28 @@
     },
     {
       "id":"parabola_checkpoint", "title":"弧线过点", "concept":"开口调速 · 二次函数", "objective":"调整一条抛物线，让小球经过金色检查点后抵达终点。", "hint":"开口控制下落速度，顶点决定弧线最低处。先让球落上轨道，再沿坡面滑向检查点。",
-      "bounds":[-9,-5,20,13], "start":[-7,7], "goal":[5,-0.5], "ball_radius":0.28, "goal_radius":0.7, "checkpoint_radius":0.5, "time_limit":30, "max_formulas":3,
+      "bounds":[-9,-5,20,13], "start":[-7,7], "goal":[5,-0.5], "ball_radius":0.28, "goal_radius":0.495, "checkpoint_radius":0.354, "time_limit":30, "max_formulas":3,
       "templates":["quadratic"], "checkpoints":[[0,0.4]], "obstacles":[], "circle_hazards":[],
       "initial_formulas":[{"template":"quadratic","parameters":{"a":0.02,"h":4,"k":0},"domain":[-8.5,10]}],
       "reference_formulas":[{"template":"quadratic","parameters":{"a":0.04,"h":4,"k":-1},"domain":[-8.5,10]}]
     },
     {
       "id":"quiet_valley", "title":"谷底回弹", "concept":"开口定势 · 二次函数", "objective":"借助抛物线的真实弹性，避开红色危险区并收集检查点。", "hint":"金色抛物线有弹性。改变开口和顶点位置，观察落下后的反弹与滚动。",
-      "bounds":[-9,-5,20,14], "start":[-7,7], "goal":[5,-0.5], "ball_radius":0.28, "goal_radius":0.7, "checkpoint_radius":0.5, "time_limit":30, "max_formulas":3,
+      "bounds":[-9,-5,20,14], "start":[-7,7], "goal":[5,-0.5], "ball_radius":0.28, "goal_radius":0.495, "checkpoint_radius":0.354, "time_limit":30, "max_formulas":3,
       "templates":["linear","quadratic"], "checkpoints":[[-4,2.8],[1,-0.1]], "obstacles":[[-2,-3,2,2]], "circle_hazards":[[7,4,0.6]],
       "initial_formulas":[{"template":"quadratic","parameters":{"a":0.02,"h":2,"k":0},"domain":[-8.5,10]}],
       "reference_formulas":[{"template":"quadratic","parameters":{"a":0.04,"h":4,"k":-1},"domain":[-8.5,10]}]
     },
     {
       "id":"wave_walk", "title":"随波前行", "concept":"波长为尺 · 正弦函数", "objective":"利用正弦曲线的下降段，引导小球穿过检查点。", "hint":"正弦参数 b 控制波长，h 控制左右位置。小球有惯性，曲线不能直接拖着球走。",
-      "bounds":[-5,-5,18,13], "start":[2,5], "goal":[8,-0.8], "ball_radius":0.28, "goal_radius":0.7, "checkpoint_radius":0.5, "time_limit":30, "max_formulas":3,
+      "bounds":[-5,-5,18,13], "start":[2,5], "goal":[8,-0.8], "ball_radius":0.28, "goal_radius":0.495, "checkpoint_radius":0.354, "time_limit":30, "max_formulas":3,
       "templates":["linear","sine"], "checkpoints":[[4,1.7],[6.5,0.4]], "obstacles":[], "circle_hazards":[[10,3,0.7]],
       "initial_formulas":[{"template":"sine","parameters":{"a":1,"b":0.3,"h":-2,"k":0},"domain":[-4,12]}],
       "reference_formulas":[{"template":"sine","parameters":{"a":2,"b":0.3,"h":-4,"k":0},"domain":[-4,12]}]
     },
     {
       "id":"choose_your_way", "title":"三轨入画", "concept":"自由拼接 · 组合轨道", "objective":"组合多段轨道，越过空隙并以任意顺序收集全部检查点。", "hint":"最多三条函数，所有轨道同时参与碰撞。轨道之间可以留空隙，让小球自由飞行后再次落上轨道。",
-      "bounds":[-9,-6,21,15], "start":[-7,5], "goal":[8,-2.5], "ball_radius":0.28, "goal_radius":0.7, "checkpoint_radius":0.5, "time_limit":30, "max_formulas":3,
+      "bounds":[-9,-6,21,15], "start":[-7,5], "goal":[8,-2.5], "ball_radius":0.28, "goal_radius":0.495, "checkpoint_radius":0.354, "time_limit":30, "max_formulas":3,
       "templates":["linear","quadratic","sine"], "checkpoints":[[-3,2.6],[4,-1.6],[7,-2.4]], "obstacles":[[-0.8,4,2,1]], "circle_hazards":[],
       "initial_formulas":[{"template":"linear","parameters":{"a":-0.15,"b":1},"domain":[-8,-1]}],
       "reference_formulas":[{"template":"linear","parameters":{"a":-0.4,"b":1},"domain":[-8,-1]},{"template":"linear","parameters":{"a":-0.25,"b":-1},"domain":[-0.2,10]}]

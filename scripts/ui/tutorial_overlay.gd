@@ -4,8 +4,8 @@ extends Control
 signal finished
 
 const UITheme = preload("res://scripts/ui/ui_theme.gd")
-const DIM_COLOR := Color(0.08, 0.12, 0.18, 0.62)
-const ACCENT := Color("4968b5")
+const DIM_COLOR := Color(0.005, 0.015, 0.025, 0.72)
+const ACCENT := Color("6ee0c7")
 
 @onready var card: PanelContainer = %Card
 @onready var step_label: Label = %StepLabel
@@ -28,12 +28,12 @@ var _action_ready := false
 func _ready() -> void:
 	hide()
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var style := UITheme.panel(Color("fbfcff"), 10, Color("b7c4dc"))
+	var style := UITheme.panel(UITheme.PANEL_RAISED, 10, Color("3b556b"))
 	style.content_margin_left = 20
 	style.content_margin_right = 20
 	style.content_margin_top = 16
 	style.content_margin_bottom = 16
-	style.shadow_color = Color(0.08, 0.12, 0.18, 0.18)
+	style.shadow_color = Color(0, 0, 0, 0.42)
 	style.shadow_size = 14
 	card.add_theme_stylebox_override("panel", style)
 	next_button.pressed.connect(_advance)
@@ -209,14 +209,14 @@ func _draw() -> void:
 	draw_rect(Rect2(0, hole.position.y, hole.position.x, hole.size.y), DIM_COLOR)
 	draw_rect(Rect2(hole.end.x, hole.position.y, size.x - hole.end.x, hole.size.y), DIM_COLOR)
 	var halo := StyleBoxFlat.new()
-	halo.bg_color = Color(1, 1, 1, 0.025)
+	halo.bg_color = Color(ACCENT, 0.025)
 	halo.border_color = Color(ACCENT, 0.22)
 	halo.set_border_width_all(5)
 	halo.set_corner_radius_all(13)
 	draw_style_box(halo, hole)
 	var ring := StyleBoxFlat.new()
 	ring.bg_color = Color(0, 0, 0, 0)
-	ring.border_color = Color("dfe8ff")
+	ring.border_color = Color("bff8ec")
 	ring.set_border_width_all(2)
 	ring.set_corner_radius_all(10)
 	draw_style_box(ring, hole)

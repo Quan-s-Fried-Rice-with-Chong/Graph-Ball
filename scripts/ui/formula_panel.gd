@@ -228,7 +228,7 @@ func get_tutorial_target(target: String) -> Control:
 func _build_entry(index: int) -> Dictionary:
 	var formula: Dictionary = formulas[index]
 	var card := PanelContainer.new()
-	var card_style := UITheme.panel(Color.WHITE, 5, Color("e1e4ea"))
+	var card_style := UITheme.panel(UITheme.PANEL_RAISED, 5, UITheme.LINE)
 	card_style.content_margin_left = 0
 	card_style.content_margin_right = 0
 	card_style.content_margin_top = 0
@@ -252,7 +252,7 @@ func _build_entry(index: int) -> Dictionary:
 	tag.text = "f%d" % (index + 1)
 	tag.custom_minimum_size = Vector2(24, 0)
 	tag.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	tag.add_theme_color_override("font_color", Color("4968b5"))
+	tag.add_theme_color_override("font_color", UITheme.ACCENT)
 	tag.add_theme_font_size_override("font_size", 15)
 	header.add_child(tag)
 	var expression := Label.new()
@@ -277,7 +277,7 @@ func _build_entry(index: int) -> Dictionary:
 	remove_button.tooltip_text = "移除这条函数"
 	remove_button.text = "×"
 	remove_button.add_theme_font_size_override("font_size", 19)
-	remove_button.add_theme_color_override("font_color", Color("7f838b"))
+	remove_button.add_theme_color_override("font_color", UITheme.MUTED)
 	header.add_child(remove_button)
 
 	var details_margin := MarginContainer.new()
@@ -341,7 +341,7 @@ func _build_entry(index: int) -> Dictionary:
 	var domain_header := Label.new()
 	domain_header.name = "DomainLabel"
 	domain_header.add_theme_font_size_override("font_size", 14)
-	domain_header.add_theme_color_override("font_color", Color("4f5560"))
+	domain_header.add_theme_color_override("font_color", Color("b5c0cc"))
 	domain_box.add_child(domain_header)
 	var domain_slider := DualRangeSlider.new()
 	domain_slider.set_range_limits(_domain_min, _domain_max, DOMAIN_STEP)
@@ -353,7 +353,7 @@ func _build_entry(index: int) -> Dictionary:
 	var from_label := Label.new()
 	from_label.text = "x 从"
 	from_label.add_theme_font_size_override("font_size", 13)
-	from_label.add_theme_color_override("font_color", Color("81858c"))
+	from_label.add_theme_color_override("font_color", UITheme.MUTED)
 	domain_row.add_child(from_label)
 	var min_spin := SpinBox.new()
 	min_spin.custom_minimum_size = Vector2(84, 32)
@@ -367,7 +367,7 @@ func _build_entry(index: int) -> Dictionary:
 	var to_label := Label.new()
 	to_label.text = "到"
 	to_label.add_theme_font_size_override("font_size", 13)
-	to_label.add_theme_color_override("font_color", Color("81858c"))
+	to_label.add_theme_color_override("font_color", UITheme.MUTED)
 	domain_row.add_child(to_label)
 	var max_spin := SpinBox.new()
 	max_spin.custom_minimum_size = Vector2(84, 32)
