@@ -44,14 +44,49 @@ static func validate_document(document: Variant) -> Array[String]:
 				errors.append("无效数值 %s" % key)
 		if data.get("ball_radius") != GameConstants.BALL_RADIUS:
 			errors.append("正式关卡球半径固定为 0.28")
-		if data.get("max_formulas", 3) != 3:
-			errors.append("正式关卡函数上限为 3")
+		var max_functions = data.get("max_formulas", 3)
+		if not numeric(max_functions) or int(max_functions) != float(max_functions) or int(max_functions) < 1 or int(max_functions) > 3:
+			errors.append("函数数量上限应为 1 到 3")
 		if not data.get("templates") is Array or data.templates.is_empty():
 			errors.append("缺少函数模板白名单")
 			continue
 		for template_id in data.templates:
 			if not Catalog.TEMPLATES.has(template_id):
 				errors.append("未知函数模板")
+		if data.has("template_defaults"):
+			if not data.template_defaults is Dictionary:
+				errors.append("template_defaults 必须是对象")
+			else:
+				for template_id in data.template_defaults:
+					if not data.templates.has(template_id):
+						errors.append("默认参数使用了未知函数模板")
+					elif not data.template_defaults[template_id] is Dictionary or not Catalog.validate(template_id, data.template_defaults[template_id]).is_empty():
+						errors.append("函数默认参数无效")
+		if data.has("tutorial"):
+			if not data.tutorial is Dictionary:
+				errors.append("tutorial 必须是对象")
+			else:
+				var features = data.tutorial.get("features", {})
+				if not features is Dictionary:
+					errors.append("tutorial.features 必须是对象")
+				else:
+					for key in ["add_formula", "template_picker"]:
+						if features.has(key) and not features[key] is bool:
+							errors.append("tutorial.features.%s 必须是布尔值" % key)
+				var steps = data.tutorial.get("steps", [])
+				if not steps is Array or steps.is_empty():
+					errors.append("tutorial.steps 不能为空")
+				else:
+					var targets := ["formula_list", "formula_card", "formula_card_2", "formula_expand", "formula_parameters", "formula_parameters_2", "formula_domain", "formula_domain_2", "formula_picker", "add_formula", "run_button", "graph", "obstacle", "formula_stat"]
+					var actions := ["next", "expand", "parameter_change", "parameter_change_2", "domain_change", "domain_change_2", "formula_added", "template_quadratic", "run"]
+					for step in steps:
+						if not step is Dictionary or not step.get("target") is String or not step.get("title") is String or not step.get("text") is String:
+							errors.append("教程步骤格式错误")
+							continue
+						if not targets.has(step.target):
+							errors.append("未知教程目标 %s" % step.target)
+						if not actions.has(step.get("advance", "next")):
+							errors.append("未知教程推进方式 %s" % step.get("advance", "next"))
 		for key in ["checkpoints", "obstacles", "circle_hazards"]:
 			if not data.get(key, []) is Array:
 				errors.append("%s 必须是数组" % key)
@@ -102,6 +137,9 @@ static func load_levels() -> Array:
 		for key in ["initial_formulas", "reference_formulas"]:
 			for f in data[key]:
 				f.domain = Vector2(f.domain[0], f.domain[1])
+		if data.has("template_defaults"):
+			for template_id in data.template_defaults:
+				data.template_defaults[template_id] = data.template_defaults[template_id].duplicate(true)
 		data.initial_template = data.initial_formulas[0].template
 		data.initial_parameters = {}
 		for f in data.initial_formulas:

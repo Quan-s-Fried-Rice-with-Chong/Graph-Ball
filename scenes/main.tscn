@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 [ext_resource type="Script" path="res://scripts/ui/main.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/components/formula_panel.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/components/graph_canvas.tscn" id="3"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://scripts/ui/icon_button.gd" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/components/main_menu.tscn" id="7"]
 [ext_resource type="PackedScene" path="res://scenes/components/level_select_page.tscn" id="8"]
+[ext_resource type="PackedScene" path="res://scenes/components/tutorial_overlay.tscn" id="9"]
 
 [node name="FormulaLab" type="Control"]
 layout_mode = 1
@@ -37,7 +38,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.969, 0.976, 0.988, 1)
+color = Color(0.027, 0.063, 0.102, 1)
 mouse_filter = 2
 
 [node name="Layout" type="VBoxContainer" parent="GamePage"]
@@ -52,7 +53,7 @@ theme_override_constants/separation = 0
 [node name="Header" type="PanelContainer" parent="GamePage/Layout"]
 custom_minimum_size = Vector2(0, 66)
 layout_mode = 2
-theme_type_variation = &"FlatPanel"
+theme_type_variation = &"ToolbarPanel"
 
 [node name="Margin" type="MarginContainer" parent="GamePage/Layout/Header"]
 layout_mode = 2
@@ -67,7 +68,7 @@ theme_override_constants/separation = 12
 layout_mode = 2
 theme_override_font_sizes/font_size = 36
 text = "∿"
-theme_override_colors/font_color = Color(0.286, 0.408, 0.71, 1)
+theme_override_colors/font_color = Color(0.431, 0.878, 0.78, 1)
 
 [node name="Brand" type="Label" parent="GamePage/Layout/Header/Margin/Row"]
 layout_mode = 2
@@ -83,7 +84,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 21
 text = "01"
-theme_override_colors/font_color = Color(0.51, 0.52, 0.55, 1)
+theme_override_colors/font_color = Color(0.545, 0.6, 0.671, 1)
 
 [node name="LevelTitle" type="Label" parent="GamePage/Layout/Header/Margin/Row"]
 unique_name_in_owner = true
@@ -145,7 +146,7 @@ theme_override_constants/separation = 10
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "公式数量"
-theme_override_colors/font_color = Color(0.51, 0.52, 0.55, 1)
+theme_override_colors/font_color = Color(0.545, 0.6, 0.671, 1)
 
 [node name="FormulaValue" type="Label" parent="GamePage/Layout/Navigation/Margin/Row/FormulaStat"]
 unique_name_in_owner = true
@@ -167,7 +168,7 @@ theme_override_constants/separation = 10
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "检查点"
-theme_override_colors/font_color = Color(0.51, 0.52, 0.55, 1)
+theme_override_colors/font_color = Color(0.545, 0.6, 0.671, 1)
 
 [node name="CheckpointValue" type="Label" parent="GamePage/Layout/Navigation/Margin/Row/CheckpointStat"]
 unique_name_in_owner = true
@@ -189,7 +190,7 @@ theme_override_constants/separation = 10
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "用时"
-theme_override_colors/font_color = Color(0.51, 0.52, 0.55, 1)
+theme_override_colors/font_color = Color(0.545, 0.6, 0.671, 1)
 
 [node name="TimeValue" type="Label" parent="GamePage/Layout/Navigation/Margin/Row/TimeStat"]
 unique_name_in_owner = true
@@ -324,7 +325,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "编辑中"
-theme_override_colors/font_color = Color(0.51, 0.52, 0.55, 1)
+theme_override_colors/font_color = Color(0.545, 0.6, 0.671, 1)
 
 [node name="Space" type="Control" parent="GamePage/Layout/Workspace/Canvas/Toolbar/Margin/Row"]
 layout_mode = 2
@@ -353,7 +354,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "100%"
-theme_override_colors/font_color = Color(0.51, 0.52, 0.55, 1)
+theme_override_colors/font_color = Color(0.545, 0.6, 0.671, 1)
 custom_minimum_size = Vector2(48, 0)
 horizontal_alignment = 1
 
@@ -391,7 +392,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = ""
-theme_override_colors/font_color = Color(0.51, 0.52, 0.55, 1)
+theme_override_colors/font_color = Color(0.545, 0.6, 0.671, 1)
 size_flags_horizontal = 3
 clip_text = true
 
@@ -400,13 +401,17 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = ""
-theme_override_colors/font_color = Color(0.51, 0.52, 0.55, 1)
+theme_override_colors/font_color = Color(0.545, 0.6, 0.671, 1)
 
 [node name="OperationHints" type="Label" parent="GamePage/Layout/Footer/Margin/Row"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "滚轮：上下    Shift + 滚轮：左右    Ctrl + 滚轮：缩放    中键：拖动"
-theme_override_colors/font_color = Color(0.51, 0.52, 0.55, 1)
+theme_override_colors/font_color = Color(0.545, 0.6, 0.671, 1)
+
+[node name="TutorialOverlay" parent="GamePage" instance=ExtResource("9")]
+unique_name_in_owner = true
+layout_mode = 1
 
 [node name="MainMenu" parent="." instance=ExtResource("7")]
 unique_name_in_owner = true
@@ -445,7 +450,7 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.1, 0.17, 0.26, 0.25)
+color = Color(0.008, 0.02, 0.035, 0.72)
 
 [node name="Center" type="CenterContainer" parent="HelpModal"]
 layout_mode = 1
@@ -470,6 +475,7 @@ text = "教程文档"
 custom_minimum_size = Vector2(580, 0)
 layout_mode = 2
 text = "01   展开函数卡片，拖动滑条或输入数值，调整参数和定义域。\n02   每关最多三条函数；重叠轨道全部参与真实碰撞。\n03   蓝色直线和紫色正弦轨道提供支撑；金色二次轨道具有弹性。\n04   小球从起点自由下落，受重力影响，可以脱轨、反弹、跨越空隙。\n05   任意顺序触及所有金色检查点，再进入绿色终点。\n06   触及红色危险区、球心越界或超时都会失败。\n\n重试：保留当前函数、参数和定义域。\n重置：恢复本关最初的配置。\n\n滚轮上下平移；Shift + 滚轮左右平移；\nCtrl + 滚轮缩放；中键拖动；运行时固定全景。\n空格运行 / 暂停，R 重试，Esc 关闭弹窗 / 暂停。"
+theme_override_colors/font_color = Color(0.745, 0.792, 0.851, 1)
 autowrap_mode = 3
 
 [node name="CloseHelpButton" type="Button" parent="HelpModal/Center/Card/Content"]
@@ -496,7 +502,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.2, 0.2, 0.22, 0.18)
+color = Color(0.008, 0.02, 0.035, 0.72)
 
 [node name="Center" type="CenterContainer" parent="HintModal"]
 layout_mode = 1
@@ -524,6 +530,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = ""
+theme_override_colors/font_color = Color(0.745, 0.792, 0.851, 1)
 custom_minimum_size = Vector2(520, 0)
 autowrap_mode = 3
 

@@ -14,7 +14,7 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.969, 0.976, 0.988, 1)
+color = Color(0.027, 0.063, 0.102, 1)
 mouse_filter = 2
 
 [node name="HeaderMargin" type="MarginContainer" parent="."]
@@ -29,7 +29,7 @@ layout_mode = 2
 
 [node name="Logo" type="Label" parent="HeaderMargin/Row"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.286, 0.408, 0.71, 1)
+theme_override_colors/font_color = Color(0.431, 0.878, 0.78, 1)
 theme_override_font_sizes/font_size = 36
 text = "∿"
 
@@ -53,22 +53,39 @@ text = "返回"
 [node name="Heading" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchor_left = 0.10
-anchor_top = 0.22
+anchor_top = 0.18
 anchor_right = 0.90
-offset_bottom = 72.0
+anchor_bottom = 0.29
+
+[node name="Eyebrow" type="HBoxContainer" parent="Heading"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="AccentLine" type="ColorRect" parent="Heading/Eyebrow"]
+custom_minimum_size = Vector2(30, 2)
+layout_mode = 2
+size_flags_vertical = 4
+color = Color(0.431, 0.878, 0.78, 0.9)
+
+[node name="Label" type="Label" parent="Heading/Eyebrow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.545, 0.6, 0.671, 1)
+theme_override_font_sizes/font_size = 11
+text = "STAGE SELECT   /   07"
 
 [node name="Title" type="Label" parent="Heading"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 34
+theme_override_colors/font_color = Color(0.949, 0.933, 0.894, 1)
+theme_override_font_sizes/font_size = 46
 text = "关卡选择"
 
 [node name="LevelRoute" type="Control" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
 anchor_left = 0.10
-anchor_top = 0.34
+anchor_top = 0.30
 anchor_right = 0.90
-anchor_bottom = 0.76
+anchor_bottom = 0.82
 mouse_filter = 2
 script = ExtResource("2")
 
@@ -76,9 +93,9 @@ script = ExtResource("2")
 unique_name_in_owner = true
 layout_mode = 1
 anchor_left = 0.10
-anchor_top = 0.79
+anchor_top = 0.85
 anchor_right = 0.90
 offset_bottom = 24.0
-theme_override_colors/font_color = Color(0.51, 0.54, 0.60, 1)
+theme_override_colors/font_color = Color(0.545, 0.6, 0.671, 1)
 theme_override_font_sizes/font_size = 14
 text = "0 / 4 已通关"

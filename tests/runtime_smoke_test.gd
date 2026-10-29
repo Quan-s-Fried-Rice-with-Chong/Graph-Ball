@@ -18,12 +18,65 @@ func _run() -> void:
 	check(ui.current_screen == "menu" and ui.unlocked_level == 0, "Clean progression")
 	check(not ui.load_level(1), "Locked level rejected")
 	ui.enter_game()
-	ui.formula_panel.add_formula()
-	ui.formula_panel.add_formula()
-	check(ui.formula_panel.add_formula() == -1 and ui.formula_panel.get_formula_count() == 3, "UI max three")
+	await process_frame
+	check(ui.tutorial_overlay.is_active() and ui.tutorial_overlay.get_current_step().target == "formula_expand", "Tutorial starts on expand")
+	check(not ui.formula_panel.add_section.visible and not ui.formula_panel.get_tutorial_target("formula_picker").visible, "Tutorial one hides advanced features")
+	ui.formula_panel.set_details_expanded(true)
+	await process_frame
+	await process_frame
+	check(not ui.tutorial_overlay.next_button.disabled, "Tutorial waits for player after expand")
+	ui.tutorial_overlay.advance()
+	await process_frame
+	check(ui.tutorial_overlay.get_current_step().target == "formula_parameters", "Tutorial advances after expand")
+	ui.formula_panel.set_formula("linear", {"a": -0.6, "b": 2.3})
+	await process_frame
+	await process_frame
+	check(ui.tutorial_overlay.get_current_step().target == "formula_parameters", "Tutorial stays on parameter step")
+	check(not ui.tutorial_overlay.next_button.disabled, "Tutorial enables continue after parameter change")
+	ui.tutorial_overlay.advance()
+	await process_frame
+	check(ui.tutorial_overlay.get_current_step().target == "formula_domain", "Tutorial advances after parameter change")
+	ui.formula_panel.set_domain(0, -8.0, 9.0)
+	await process_frame
+	await process_frame
+	check(ui.tutorial_overlay.get_current_step().target == "formula_domain", "Tutorial stays on domain step")
+	ui.tutorial_overlay.advance()
+	await process_frame
+	check(ui.tutorial_overlay.get_current_step().target == "run_button", "Tutorial advances after domain change")
+	check(ui.formula_panel.add_formula() == -1 and ui.formula_panel.get_formula_count() == 1, "Tutorial starts with one formula")
 	ui.reset_level()
 	for i in ui.levels.size():
 		check(ui.load_level(i), "Load sequential level")
+		if i == 1:
+			check(ui.formula_panel.add_section.visible and not ui.formula_panel.get_tutorial_target("formula_picker").visible, "Tutorial two unlocks add only")
+			var first_params: Dictionary = ui.formula_panel.get_formulas()[0].parameters.duplicate()
+			ui.formula_panel.add_formula()
+			var second_params: Dictionary = ui.formula_panel.get_formulas()[1].parameters
+			check(not is_equal_approx(float(first_params.b), float(second_params.b)), "New formula is vertically offset")
+			ui.formula_panel.add_formula()
+			var third_params: Dictionary = ui.formula_panel.get_formulas()[2].parameters
+			check(not is_equal_approx(float(second_params.b), float(third_params.b)), "Third formula is vertically offset")
+			check(ui.formula_panel.add_formula() == -1 and ui.formula_panel.get_formula_count() == 3, "UI max three")
+		if i == 2:
+			check(ui.formula_panel.get_tutorial_target("formula_picker").visible, "Tutorial three unlocks template picker")
+			await process_frame
+			check(ui.tutorial_overlay.get_current_step().target == "obstacle", "Tutorial three starts with obstacle")
+			ui.tutorial_overlay.advance()
+			await process_frame
+			ui.formula_panel.set_details_expanded(true)
+			await process_frame
+			await process_frame
+			check(ui.tutorial_overlay.get_current_step().target == "formula_expand", "Tutorial waits after expand in lesson three")
+			ui.tutorial_overlay.advance()
+			await process_frame
+			check(ui.tutorial_overlay.get_current_step().target == "formula_picker", "Tutorial three reveals picker")
+			ui.formula_panel.set_formula("quadratic", {"a": 0.05, "h": 3, "k": -2})
+			await process_frame
+			await process_frame
+			check(ui.tutorial_overlay.get_current_step().target == "formula_picker", "Tutorial stays on template step")
+			ui.tutorial_overlay.advance()
+			await process_frame
+			check(ui.tutorial_overlay.get_current_step().target == "formula_parameters", "Tutorial advances after template switch")
 		check(ui.formula_panel.set_formulas(ui.levels[i].reference_formulas).is_empty(), "Apply reference")
 		await physics_frame
 		ui.start_run()
@@ -50,9 +103,12 @@ func _run() -> void:
 		await process_frame
 		check(ui.adapter.state == "success", "Reference wins: " + ui.levels[i].id)
 		check(ui.adapter.reached.count(true) == ui.adapter.reached.size(), "All checkpoints")
+		check(not ui.adapter.core.game_world.running and ui.adapter.core.game_world.ball.freeze, "Success freezes ball immediately")
 		check(ui.result_dialog.visible, "Result visible")
+		check(ui.result_dialog.summary.text.split("\n").size() == 4, "Result summary has four rows")
+		check(not ui.result_dialog.summary.text.contains("检查点") and not ui.result_dialog.summary.text.contains("公式越少"), "Result summary is concise")
 		check(ui.adapter.last_result.saved, "Saved progress")
-		check(ui.unlocked_level == mini(i+1,3), "Next unlock")
+		check(ui.unlocked_level == mini(i+1, ui.levels.size()-1), "Next unlock")
 		print("REFERENCE_PASS %s time=%.4f formulas=%d" % [ui.levels[i].id, ui.adapter.elapsed, ui.adapter.formulas.size()])
 		var retained: Array = ui.formula_panel.get_formulas()
 		ui.retry_run()
@@ -60,7 +116,7 @@ func _run() -> void:
 		check(ui.formula_panel.get_formulas() == retained, "Retry retains configuration")
 		await process_frame
 		check(ui.adapter.core.game_world.track_builder.get_child_count() == retained.size(), "No duplicate colliders")
-	check(SaveManager.load_progress().completed_levels.size() == 4, "Four records stored")
+	check(SaveManager.load_progress().completed_levels.size() == ui.levels.size(), "All records stored")
 	ui.open_levels()
 	check(ui.level_page.get_node("%LevelRoute").cards.size() == ui.levels.size(), "All level cards constructed")
 	check(ui.level_page.get_lock_states().count(true) == 0, "All levels replayable")
@@ -69,7 +125,7 @@ func _run() -> void:
 	var reopened = load("res://scenes/main.tscn").instantiate()
 	root.add_child(reopened)
 	await process_frame
-	check(reopened.unlocked_level == 3 and reopened.completed.size() == 4, "Reopen restores progress")
+	check(reopened.unlocked_level == reopened.levels.size()-1 and reopened.completed.size() == reopened.levels.size(), "Reopen restores progress")
 	reopened.queue_free()
 	await process_frame
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(SaveManager.save_path))

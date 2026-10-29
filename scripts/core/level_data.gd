@@ -19,7 +19,8 @@ static func from_ui(data: Dictionary) -> Dictionary:
 	return {"id": data.id, "title": data.title, "time_limit": data.time_limit,
 		"start": {"position": data.start, "velocity": Vector2.ZERO},
 		"goal": {"position": data.goal, "radius": data.goal_radius},
-		"checkpoints": checkpoints, "hazards": hazards, "allowed_types": types, "max_functions": 3,
+		"checkpoints": checkpoints, "hazards": hazards, "allowed_types": types,
+		"max_functions": int(data.get("max_formulas", GameConstants.MAX_FORMULAS)),
 		"boundary": PackedVector2Array([b.position, Vector2(b.end.x, b.position.y), b.end, Vector2(b.position.x, b.end.y)]),
 		"formulas": Catalog.to_core_list(data.initial_formulas)}
 

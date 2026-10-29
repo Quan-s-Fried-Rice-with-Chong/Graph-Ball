@@ -195,9 +195,13 @@ func _on_checkpoint_reached(_index: int) -> void:
 	pass
 
 func _on_goal_reached() -> void:
+	if state != RunState.RUNNING:
+		return
 	finish_run(true, "通关")
 
 func _on_world_failed(reason: String) -> void:
+	if state != RunState.RUNNING and state != RunState.PAUSED:
+		return
 	finish_run(false, reason)
 
 func _on_ball_state_changed(position_value: Vector2, velocity: Vector2) -> void:

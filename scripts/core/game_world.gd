@@ -1,6 +1,8 @@
 class_name FormulaGameWorld
 extends Node2D
 
+const GOAL_ENTRY_BALL_FACTOR := 0.65
+
 signal checkpoint_reached(index: int)
 signal goal_reached
 signal world_failed(reason: String)
@@ -13,6 +15,7 @@ var checkpoint_index := 0
 var reached: Array = []
 var running := false
 var paused := false
+var goal_latched := false
 var previous_position := Vector2.ZERO
 var world_scale := GameConstants.WORLD_SCALE
 @onready var track_builder: TrackBuilder = $TrackBuilder
@@ -40,6 +43,7 @@ func preview_tracks(current_formulas: Array) -> void:
 func reset_ball() -> void:
 	running = false
 	paused = false
+	goal_latched = false
 	checkpoint_index = 0
 	reached = []
 	reached.resize(level.get("checkpoints", []).size())
@@ -142,17 +146,20 @@ func check_motion(a: Vector2, b: Vector2) -> void:
 		if is_finite(t):
 			events.append({"t": t, "kind": 1, "index": i})
 	var goal: Dictionary = level.get("goal", {})
-	var goal_t := circle_contact(a, b, goal.get("position", Vector2.ZERO), float(goal.get("radius", 0.5)) + radius)
+	var goal_position: Vector2 = goal.get("position", Vector2.ZERO)
+	var goal_radius := float(goal.get("radius", 0.5))
+	var goal_trigger_radius := goal_radius + radius * GOAL_ENTRY_BALL_FACTOR
+	var goal_t := circle_contact(a, b, goal_position, goal_trigger_radius)
 	if is_finite(goal_t):
-		events.append({"t": goal_t, "kind": 2})
+		events.append({"t": goal_t, "kind": 2, "position": a.lerp(b, goal_t)})
 	# If the last checkpoint is collected inside the goal, win at that instant,
 	# even when this fast segment leaves the goal before its endpoint.
 	for event in events.duplicate():
-		if event.kind == 1 and a.lerp(b, event.t).distance_to(goal.get("position", Vector2.ZERO)) <= float(goal.get("radius", 0.5)) + radius:
-			events.append({"t": event.t, "kind": 2})
+		if event.kind == 1 and a.lerp(b, event.t).distance_to(goal_position) <= goal_trigger_radius:
+			events.append({"t": event.t, "kind": 2, "position": a.lerp(b, event.t)})
 	# A checkpoint gathered while already overlapping the goal also unlocks it.
-	if b.distance_to(goal.get("position", Vector2.ZERO)) <= float(goal.get("radius", 0.5)) + radius:
-		events.append({"t": 1.0, "kind": 2})
+	if b.distance_to(goal_position) <= goal_trigger_radius:
+		events.append({"t": 1.0, "kind": 2, "position": b})
 	events.sort_custom(func(x: Dictionary, y: Dictionary): return x.kind < y.kind if x.t == y.t else x.t < y.t)
 	for event in events:
 		if event.kind == 0:
@@ -163,7 +170,9 @@ func check_motion(a: Vector2, b: Vector2) -> void:
 			reached[event.index] = true
 			checkpoint_index += 1
 			checkpoint_reached.emit(event.index)
-		if event.kind == 2 and checkpoint_index == reached.size():
+		if event.kind == 2 and checkpoint_index == reached.size() and not goal_latched:
+			goal_latched = true
+			ball.position = world_to_local_screen(event.get("position", b))
 			stop_simulation()
 			goal_reached.emit()
 			return

@@ -16,6 +16,7 @@ const SIDEBAR_ANIMATION_TIME := 0.24
 @onready var result_dialog = %ResultDialog
 @onready var main_menu = %MainMenu
 @onready var level_page = %LevelSelectPage
+@onready var tutorial_overlay = %TutorialOverlay
 
 var levels: Array = []
 var current_level := 0
@@ -28,6 +29,7 @@ var _booting := true
 var _levels_origin := "menu"
 var _sidebar_collapsed := false
 var _sidebar_tween: Tween
+var _tutorial_seen: Dictionary = {}
 
 func _ready() -> void:
 	get_window().title = "数维弹球"
@@ -108,6 +110,7 @@ func load_level(index: int) -> bool:
 	_loading = true
 	current_level = index
 	var data: Dictionary = levels[index]
+	tutorial_overlay.stop(false)
 	result_dialog.hide()
 	level_page.hide()
 	%HelpModal.hide()
@@ -118,6 +121,7 @@ func load_level(index: int) -> bool:
 	%HintText.text = data.objective + "\n\n" + data.hint
 	formula_panel.set_locked(false)
 	formula_panel.configure(data)
+	_apply_tutorial_features(data)
 	%FormulaValue.text = "%d / %d" % [formula_panel.get_formula_count(), formula_panel.get_max_formulas()]
 	graph.view_locked = false
 	graph.set_level(data)
@@ -127,6 +131,7 @@ func load_level(index: int) -> bool:
 	main_menu.hide()
 	if not _booting:
 		_has_entered_game = true
+		_show_tutorial_if_needed.call_deferred()
 	_loading = false
 	return true
 
@@ -137,6 +142,7 @@ func enter_game() -> void:
 	level_page.hide()
 	%GamePage.show()
 	_restore_result_if_needed()
+	_show_tutorial_if_needed.call_deferred()
 
 func open_main_menu() -> void:
 	if adapter.state == "running":
@@ -160,11 +166,12 @@ func _on_formulas_changed(formula_list: Array) -> void:
 	graph.reset_trail()
 
 func start_run() -> void:
-	if _modal_open() or adapter.state != "editing":
+	if _blocking_modal_open() or adapter.state != "editing":
 		return
 	formula_panel.commit_input()
 	graph.remember_curve()
 	graph.fit_view()
+	tutorial_overlay.stop(false)
 	adapter.start()
 
 func retry_run() -> void:
@@ -200,6 +207,7 @@ func _on_state_changed(state: String) -> void:
 	%StateLabel.text = names.get(state, state)
 
 func _on_run_finished(result: Dictionary) -> void:
+	tutorial_overlay.stop(false)
 	var saved := true
 	if result.success:
 		var id: String = levels[current_level].id
@@ -258,6 +266,9 @@ func close_help() -> void:
 	%HelpModal.hide()
 
 func _modal_open() -> bool:
+	return _blocking_modal_open() or tutorial_overlay.is_active()
+
+func _blocking_modal_open() -> bool:
 	return current_screen != "game" or result_dialog.visible or %HelpModal.visible or %HintModal.visible
 
 func _input(event: InputEvent) -> void:
@@ -293,12 +304,51 @@ func _load_progress() -> void:
 			for data in levels:
 				if id == data.id and not completed.has(id):
 					completed.append(id)
-	# Only a consecutive run of completed levels unlocks the next one.
+	var highest_completed := -1
 	for i in range(levels.size()):
 		if completed.has(levels[i].id):
-			unlocked_level = mini(i + 1, levels.size() - 1)
-		else:
-			break
+			highest_completed = i
+	unlocked_level = mini(highest_completed + 1, levels.size() - 1)
+
+func _apply_tutorial_features(data: Dictionary) -> void:
+	var tutorial: Dictionary = data.get("tutorial", {})
+	var features: Dictionary = tutorial.get("features", {})
+	formula_panel.set_feature_visibility(bool(features.get("add_formula", true)), bool(features.get("template_picker", true)))
+
+func _show_tutorial_if_needed() -> void:
+	if _booting or current_screen != "game" or tutorial_overlay.is_active():
+		return
+	if current_level < 0 or current_level >= levels.size():
+		return
+	var data: Dictionary = levels[current_level]
+	var tutorial: Dictionary = data.get("tutorial", {})
+	var steps: Array = tutorial.get("steps", [])
+	if steps.is_empty() or completed.has(data.id) or _tutorial_seen.has(data.id):
+		return
+	_tutorial_seen[data.id] = true
+	tutorial_overlay.start(steps, _tutorial_target_rect, _tutorial_state)
+
+func _tutorial_state() -> Dictionary:
+	return {
+		"expanded": formula_panel.is_details_expanded(),
+		"formula_count": formula_panel.get_formula_count(),
+		"formulas": formula_panel.get_formulas(),
+		"state": adapter.state,
+	}
+
+func _tutorial_target_rect(target: String) -> Rect2:
+	match target:
+		"run_button":
+			return %RunButton.get_global_rect()
+		"graph":
+			return graph.get_global_rect()
+		"formula_stat":
+			return %FormulaValue.get_global_rect()
+		"obstacle":
+			var obstacles: Array = levels[current_level].get("obstacles", [])
+			return graph.world_rect_to_global(obstacles[0]) if not obstacles.is_empty() else graph.get_global_rect()
+	var control: Control = formula_panel.get_tutorial_target(target)
+	return control.get_global_rect() if is_instance_valid(control) else Rect2()
 
 func get_debug_snapshot() -> Dictionary:
-	return {"screen": current_screen, "details_expanded": formula_panel.is_details_expanded(), "sidebar_collapsed": _sidebar_collapsed, "level": current_level, "unlocked_level": unlocked_level, "state": adapter.state, "template": formula_panel.template_id, "parameters": formula_panel.parameters.duplicate(), "formulas": formula_panel.get_formulas(), "formula_count": formula_panel.get_formula_count(), "elapsed": adapter.elapsed, "checkpoints": adapter.reached.duplicate(), "result_visible": result_dialog.visible, "help_visible": %HelpModal.visible, "hint_visible": %HintModal.visible, "levels_visible": level_page.visible, "level_locks": level_page.get_lock_states(), "zoom": graph.zoom_factor}
+	return {"screen": current_screen, "details_expanded": formula_panel.is_details_expanded(), "sidebar_collapsed": _sidebar_collapsed, "level": current_level, "unlocked_level": unlocked_level, "state": adapter.state, "template": formula_panel.template_id, "parameters": formula_panel.parameters.duplicate(), "formulas": formula_panel.get_formulas(), "formula_count": formula_panel.get_formula_count(), "elapsed": adapter.elapsed, "checkpoints": adapter.reached.duplicate(), "result_visible": result_dialog.visible, "help_visible": %HelpModal.visible, "hint_visible": %HintModal.visible, "levels_visible": level_page.visible, "level_locks": level_page.get_lock_states(), "zoom": graph.zoom_factor, "tutorial_active": tutorial_overlay.is_active(), "tutorial_step": tutorial_overlay.get_current_step().get("target", "")}
