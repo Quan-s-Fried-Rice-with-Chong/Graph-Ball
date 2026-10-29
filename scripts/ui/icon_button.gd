@@ -26,6 +26,9 @@ func _draw() -> void:
 		"pause":
 			draw_rect(Rect2(c + Vector2(-6, -8), Vector2(4, 16)), color)
 			draw_rect(Rect2(c + Vector2(2, -8), Vector2(4, 16)), color)
+		"fast_forward":
+			draw_colored_polygon(PackedVector2Array([c + Vector2(-11, -8), c + Vector2(-1, 0), c + Vector2(-11, 8)]), color)
+			draw_colored_polygon(PackedVector2Array([c + Vector2(0, -8), c + Vector2(10, 0), c + Vector2(0, 8)]), color)
 		"retry":
 			_draw_rotation(c, 20.0, 300.0, color)
 		"reset":
