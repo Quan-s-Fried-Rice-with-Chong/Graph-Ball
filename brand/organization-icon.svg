@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">双人组织 · 单色线性图标</title>
+  <desc id="desc">两个并肩的创作者线稿，代表双人协作。</desc>
+  <g fill="none" stroke="#151D24" stroke-width="28" stroke-linecap="round">
+    <circle cx="188" cy="184" r="42"/>
+    <path d="M132 406 C132 334 149 273 188 244 C227 273 244 334 244 406"/>
+    <circle cx="324" cy="184" r="42"/>
+    <path d="M268 406 C268 334 285 273 324 244 C363 273 380 334 380 406"/>
+  </g>
+</svg>

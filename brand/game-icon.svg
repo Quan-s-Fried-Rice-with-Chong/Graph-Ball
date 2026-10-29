@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">数维弹球 · 游戏图标</title>
+  <desc id="desc">坐标网格上的函数轨道、弹球、检查点与终点，对应数维弹球的核心玩法。</desc>
+  <defs>
+    <linearGradient id="gameBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1B242C"/>
+      <stop offset="1" stop-color="#10161C"/>
+    </linearGradient>
+    <radialGradient id="gameBall" cx="34%" cy="28%" r="78%">
+      <stop offset="0" stop-color="#EFFFFC"/>
+      <stop offset=".22" stop-color="#71F5E7"/>
+      <stop offset="1" stop-color="#1EB6B2"/>
+    </radialGradient>
+  </defs>
+  <rect x="8" y="8" width="496" height="496" rx="116" fill="url(#gameBg)" stroke="#2B3943" stroke-width="4"/>
+  <rect x="22" y="22" width="468" height="468" rx="105" fill="none" stroke="#FFFFFF" stroke-opacity=".035" stroke-width="2"/>
+  <g stroke="#6B929E" stroke-opacity=".2" stroke-width="2">
+    <path d="M88 88V424M144 88V424M200 88V424M256 88V424M312 88V424M368 88V424M424 88V424"/>
+    <path d="M88 88H424M88 144H424M88 200H424M88 256H424M88 312H424M88 368H424M88 424H424"/>
+  </g>
+  <path d="M86 352 C142 352 154 254 218 231 C282 208 305 329 363 334 C391 336 408 303 426 225" fill="none" stroke="#3BE0C1" stroke-opacity=".1" stroke-width="54" stroke-linecap="round"/>
+  <path d="M86 352 C142 352 154 254 218 231 C282 208 305 329 363 334 C391 336 408 303 426 225" fill="none" stroke="#3BE0C1" stroke-opacity=".2" stroke-width="36" stroke-linecap="round"/>
+  <path d="M86 352 C142 352 154 254 218 231 C282 208 305 329 363 334 C391 336 408 303 426 225" fill="none" stroke="#3BE0C1" stroke-width="24" stroke-linecap="round"/>
+  <circle cx="149" cy="300" r="16" fill="#141B21" stroke="#F2C26B" stroke-width="8"/>
+  <circle cx="339" cy="325" r="16" fill="#141B21" stroke="#F2C26B" stroke-width="8"/>
+  <circle cx="426" cy="225" r="21" fill="#141B21" stroke="#FF6F6F" stroke-width="9"/>
+  <circle cx="426" cy="225" r="6" fill="#FF6F6F"/>
+  <circle cx="218" cy="231" r="51" fill="#46E6D7" fill-opacity=".12"/>
+  <circle cx="218" cy="231" r="43" fill="#46E6D7" fill-opacity=".12"/>
+  <circle cx="218" cy="231" r="35" fill="url(#gameBall)" stroke="#D8FFFA" stroke-width="5"/>
+  <circle cx="206" cy="219" r="10" fill="#FFFFFF" fill-opacity=".82"/>
+</svg>
