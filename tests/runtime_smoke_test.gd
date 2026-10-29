@@ -79,8 +79,25 @@ func _run() -> void:
 			check(ui.tutorial_overlay.get_current_step().target == "formula_parameters", "Tutorial advances after template switch")
 		check(ui.formula_panel.set_formulas(ui.levels[i].reference_formulas).is_empty(), "Apply reference")
 		await physics_frame
+		var speed_button: Button = ui.get_node("%SpeedButton")
+		check(speed_button.disabled and Engine.time_scale == 1.0, "Speed disabled while editing")
 		ui.start_run()
 		check(ui.adapter.state == "running" and ui.graph.view_locked, "Run locks UI")
+		if i == 0:
+			speed_button.button_pressed = true
+			await physics_frame
+			check(not speed_button.disabled and Engine.time_scale == 2.0, "Double speed applies while running")
+			var fast_time: float = ui.adapter.core.elapsed_time
+			await physics_frame
+			check(ui.adapter.core.elapsed_time > fast_time, "Double speed advances simulation")
+			ui.adapter.pause_or_resume()
+			await physics_frame
+			check(ui.adapter.state == "paused" and Engine.time_scale == 1.0, "Pause restores UI time scale")
+			ui.adapter.pause_or_resume()
+			await physics_frame
+			check(ui.adapter.state == "running" and Engine.time_scale == 2.0, "Resume keeps selected speed")
+			speed_button.button_pressed = false
+			check(Engine.time_scale == 1.0, "Disabling double speed restores normal rate")
 		if i == 0:
 			for frame in 120:
 				await physics_frame
@@ -105,6 +122,7 @@ func _run() -> void:
 		check(ui.adapter.reached.count(true) == ui.adapter.reached.size(), "All checkpoints")
 		check(not ui.adapter.core.game_world.running and ui.adapter.core.game_world.ball.freeze, "Success freezes ball immediately")
 		check(ui.result_dialog.visible, "Result visible")
+		check(speed_button.disabled and Engine.time_scale == 1.0, "Speed resets after run ends")
 		check(ui.result_dialog.summary.text.split("\n").size() == 4, "Result summary has four rows")
 		check(not ui.result_dialog.summary.text.contains("检查点") and not ui.result_dialog.summary.text.contains("公式越少"), "Result summary is concise")
 		check(ui.adapter.last_result.saved, "Saved progress")

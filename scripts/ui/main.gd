@@ -7,6 +7,7 @@ const UITheme = preload("res://scripts/ui/ui_theme.gd")
 const SIDEBAR_WIDTH := 400.0
 const SIDEBAR_COLLAPSED_WIDTH := 26.0
 const SIDEBAR_ANIMATION_TIME := 0.24
+const DOUBLE_SPEED := 2.0
 
 @onready var formula_panel = %FormulaPanel
 @onready var sidebar: PanelContainer = %Sidebar
@@ -30,6 +31,7 @@ var _levels_origin := "menu"
 var _sidebar_collapsed := false
 var _sidebar_tween: Tween
 var _tutorial_seen: Dictionary = {}
+var _double_speed_enabled := false
 
 func _ready() -> void:
 	get_window().title = "数维弹球"
@@ -55,6 +57,7 @@ func _connect_controls() -> void:
 	adapter.validation_failed.connect(func(message: String): %StatusMessage.text = message)
 	%RunButton.pressed.connect(start_run)
 	%PauseButton.pressed.connect(adapter.pause_or_resume)
+	%SpeedButton.toggled.connect(_on_speed_toggled)
 	%RetryButton.pressed.connect(retry_run)
 	%ResetButton.pressed.connect(reset_level)
 	%ToggleSidebarButton.pressed.connect(toggle_sidebar)
@@ -201,10 +204,34 @@ func _on_state_changed(state: String) -> void:
 	%PauseButton.disabled = not locked
 	%PauseButton.symbol = "play" if state == "paused" else "pause"
 	%PauseButton.tooltip_text = "继续（空格）" if state == "paused" else "暂停（空格）"
+	%SpeedButton.disabled = not locked
+	if not locked:
+		_set_double_speed(false)
+	else:
+		_apply_time_scale()
 	%RunButton.queue_redraw()
 	%PauseButton.queue_redraw()
+	%SpeedButton.queue_redraw()
 	var names := {"editing": "编辑中", "running": "运行中", "paused": "已暂停", "success": "已通关", "failed": "待调整"}
 	%StateLabel.text = names.get(state, state)
+
+func _on_speed_toggled(enabled: bool) -> void:
+	_set_double_speed(enabled)
+	_apply_time_scale()
+
+func _set_double_speed(enabled: bool) -> void:
+	_double_speed_enabled = enabled
+	if %SpeedButton.button_pressed != enabled:
+		%SpeedButton.set_pressed_no_signal(enabled)
+	%SpeedButton.highlighted = enabled
+	%SpeedButton.tooltip_text = "恢复一倍速" if enabled else "二倍速运行"
+	%SpeedButton.queue_redraw()
+
+func _apply_time_scale() -> void:
+	Engine.time_scale = DOUBLE_SPEED if _double_speed_enabled and adapter.state == "running" else 1.0
+
+func _exit_tree() -> void:
+	Engine.time_scale = 1.0
 
 func _on_run_finished(result: Dictionary) -> void:
 	tutorial_overlay.stop(false)

@@ -288,6 +288,17 @@ script = ExtResource("6")
 symbol = "play"
 highlighted = true
 
+[node name="SpeedButton" type="Button" parent="GamePage/Layout/Workspace/Canvas/Toolbar/Margin/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(40, 38)
+theme_type_variation = &"ToolButton"
+tooltip_text = "二倍速运行"
+disabled = true
+toggle_mode = true
+script = ExtResource("6")
+symbol = "fast_forward"
+
 [node name="PauseButton" type="Button" parent="GamePage/Layout/Workspace/Canvas/Toolbar/Margin/Row"]
 unique_name_in_owner = true
 layout_mode = 2
