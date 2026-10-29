@@ -28,17 +28,29 @@ func configure(levels: Array, unlocked: int, completed: Array) -> void:
 func _layout_cards() -> void:
 	if cards.is_empty():
 		return
-	var gap := 44.0
-	var width := minf(232.0, (size.x - gap * (cards.size() - 1)) / cards.size())
-	var total := cards.size() * width + gap * (cards.size() - 1)
-	var start := (size.x - total) * 0.5
-	for i in range(cards.size()):
-		cards[i].position = Vector2(start + i * (width + gap), (size.y - 226.0) * 0.5)
-		cards[i].size = Vector2(width, 226)
+	var columns := mini(4, cards.size())
+	var rows := ceili(float(cards.size()) / float(columns))
+	var gap_x := 30.0
+	var gap_y := 24.0
+	var width := minf(220.0, (size.x - gap_x * (columns - 1)) / columns)
+	var height := minf(226.0, (size.y - gap_y * (rows - 1)) / rows)
+	for row in range(rows):
+		var first := row * columns
+		var count := mini(columns, cards.size() - first)
+		var total := count * width + gap_x * (count - 1)
+		var start_x := (size.x - total) * 0.5
+		var y := (size.y - (height * rows + gap_y * (rows - 1))) * 0.5 + row * (height + gap_y)
+		for column in range(count):
+			var index := first + column
+			cards[index].position = Vector2(start_x + column * (width + gap_x), y)
+			cards[index].size = Vector2(width, height)
 	queue_redraw()
 
 func _draw() -> void:
+	var columns := mini(4, cards.size())
 	for i in range(cards.size() - 1):
-		var from: Vector2 = cards[i].position + Vector2(cards[i].size.x, 55)
-		var to: Vector2 = cards[i + 1].position + Vector2(0, 55)
+		if (i + 1) % columns == 0:
+			continue
+		var from: Vector2 = cards[i].position + Vector2(cards[i].size.x, cards[i].size.y * 0.24)
+		var to: Vector2 = cards[i + 1].position + Vector2(0, cards[i + 1].size.y * 0.24)
 		draw_dashed_line(from, to, Color("aab8d0"), 2.0, 6.0, true)

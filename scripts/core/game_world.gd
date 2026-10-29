@@ -13,6 +13,7 @@ var checkpoint_index := 0
 var reached: Array = []
 var running := false
 var paused := false
+var goal_latched := false
 var previous_position := Vector2.ZERO
 var world_scale := GameConstants.WORLD_SCALE
 @onready var track_builder: TrackBuilder = $TrackBuilder
@@ -40,6 +41,7 @@ func preview_tracks(current_formulas: Array) -> void:
 func reset_ball() -> void:
 	running = false
 	paused = false
+	goal_latched = false
 	checkpoint_index = 0
 	reached = []
 	reached.resize(level.get("checkpoints", []).size())
@@ -163,7 +165,7 @@ func check_motion(a: Vector2, b: Vector2) -> void:
 			reached[event.index] = true
 			checkpoint_index += 1
 			checkpoint_reached.emit(event.index)
-		if event.kind == 2 and checkpoint_index == reached.size():
-			stop_simulation()
+		if event.kind == 2 and checkpoint_index == reached.size() and not goal_latched:
+			goal_latched = true
 			goal_reached.emit()
 			return

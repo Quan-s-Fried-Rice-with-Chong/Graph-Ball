@@ -14,6 +14,8 @@ const MIN_DOMAIN_WIDTH := 0.05
 
 @onready var formula_list: VBoxContainer = %FormulaList
 @onready var add_button: Button = %AddFormulaButton
+@onready var add_section: Control = add_button.get_parent()
+@onready var divider: Control = $Divider
 
 var template_id := "linear"
 var parameters: Dictionary = {}
@@ -21,12 +23,16 @@ var formulas: Array = []
 
 var _available: Array = []
 var _initial_parameters: Dictionary = {}
+var _template_defaults: Dictionary = {}
 var _domain_min := -9.0
 var _domain_max := 11.0
 var _entries: Array = []
 var _fields: Dictionary = {}
 var _locked := false
 var _rebuilding := false
+var _max_formulas := MAX_FORMULAS
+var _show_add_formula := true
+var _show_template_picker := true
 
 func _ready() -> void:
 	add_button.pressed.connect(func(): add_formula())
@@ -34,6 +40,8 @@ func _ready() -> void:
 func configure(level: Dictionary) -> void:
 	_available = level.templates.duplicate()
 	_initial_parameters = level.initial_parameters.duplicate(true)
+	_template_defaults = level.get("template_defaults", {}).duplicate(true)
+	_max_formulas = clampi(int(level.get("max_formulas", MAX_FORMULAS)), 1, MAX_FORMULAS)
 	_domain_min = float(level.bounds.position.x)
 	_domain_max = float(level.bounds.end.x)
 	formulas = []
@@ -56,7 +64,7 @@ func is_details_expanded() -> bool:
 	return not _entries.is_empty() and _entries[0].expanded
 
 func add_formula(next_template: String = "", next_parameters: Dictionary = {}, domain: Variant = null) -> int:
-	if _locked or formulas.size() >= MAX_FORMULAS:
+	if _locked or formulas.size() >= _max_formulas:
 		return -1
 	var chosen := next_template
 	if chosen.is_empty() or not chosen in _available:
@@ -68,6 +76,8 @@ func add_formula(next_template: String = "", next_parameters: Dictionary = {}, d
 		values = formulas[-1].parameters.duplicate(true)
 	else:
 		values = _default_parameters(chosen)
+	if next_parameters.is_empty():
+		values = _offset_new_curve(chosen, values)
 	var next_domain := Vector2(_domain_min, _domain_max) if domain == null else _as_domain(domain)
 	formulas.append(_make_formula(chosen, values, next_domain))
 	_rebuild_all(formulas.size() - 1)
@@ -88,15 +98,15 @@ func get_formula_count() -> int:
 	return formulas.size()
 
 func get_max_formulas() -> int:
-	return MAX_FORMULAS
+	return _max_formulas
 
 func set_formulas(values: Array) -> String:
 	if _locked:
 		return "运行时不能修改公式，请先重试。"
 	if values.is_empty():
 		return "至少需要一条函数。"
-	if values.size() > MAX_FORMULAS:
-		return "最多可以添加 %d 条函数。" % MAX_FORMULAS
+	if values.size() > _max_formulas:
+		return "最多可以添加 %d 条函数。" % _max_formulas
 	var parsed: Array = []
 	for item in values:
 		var formula := _normalized_formula(item)
@@ -142,7 +152,7 @@ func commit_input() -> void:
 
 func set_locked(value: bool) -> void:
 	_locked = value
-	add_button.disabled = value or formulas.size() >= MAX_FORMULAS
+	add_button.disabled = value or formulas.size() >= _max_formulas
 	for entry in _entries:
 		entry.picker.disabled = value
 		entry.expand_button.disabled = false
@@ -173,8 +183,47 @@ func _rebuild_all(expand_index: int = -1) -> void:
 		_set_expanded(expand_index, true)
 	_fields = _entries[0].fields if not _entries.is_empty() else {}
 	_sync_compat()
-	add_button.disabled = _locked or formulas.size() >= MAX_FORMULAS
-	add_button.text = "＋  添加函数" if formulas.size() < MAX_FORMULAS else "已达函数数量上限"
+	add_button.disabled = _locked or formulas.size() >= _max_formulas
+	add_button.text = "＋  添加函数" if formulas.size() < _max_formulas else "已达函数数量上限"
+
+func set_feature_visibility(show_add: bool, show_picker: bool) -> void:
+	_show_add_formula = show_add
+	_show_template_picker = show_picker
+	add_section.visible = show_add
+	divider.visible = show_add
+	for entry in _entries:
+		entry.picker.visible = show_picker
+
+func get_tutorial_target(target: String) -> Control:
+	if target == "add_formula":
+		return add_button
+	if target == "formula_list":
+		return formula_list
+	if _entries.is_empty():
+		return null
+	var index := 0
+	if target.ends_with("_2"):
+		index = 1
+	elif target.ends_with("_3"):
+		index = 2
+	if index >= _entries.size():
+		return null
+	var entry: Dictionary = _entries[index]
+	var key := target.trim_suffix("_2").trim_suffix("_3")
+	match key:
+		"formula_card":
+			return entry.card
+		"formula_expand":
+			return entry.expand_button
+		"formula_parameters", "formula_parameter_a":
+			if key == "formula_parameter_a" and entry.fields.has("a"):
+				return entry.fields.a.group
+			return entry.parameter_list
+		"formula_domain":
+			return entry.domain_box
+		"formula_picker":
+			return entry.picker
+	return null
 
 func _build_entry(index: int) -> Dictionary:
 	var formula: Dictionary = formulas[index]
@@ -244,6 +293,7 @@ func _build_entry(index: int) -> Dictionary:
 	picker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	picker.add_theme_font_size_override("font_size", 15)
 	picker.clip_text = true
+	picker.visible = _show_template_picker
 	for id in _available:
 		picker.add_item(Catalog.TEMPLATES[id].title)
 		picker.set_item_metadata(picker.item_count - 1, id)
@@ -283,20 +333,23 @@ func _build_entry(index: int) -> Dictionary:
 		slider.value = formula.parameters[spec.key]
 		group.add_child(slider)
 		parameter_list.add_child(group)
-		fields[spec.key] = {"spin": spin, "slider": slider}
+		fields[spec.key] = {"spin": spin, "slider": slider, "row": row, "group": group}
 
+	var domain_box := VBoxContainer.new()
+	domain_box.add_theme_constant_override("separation", 8)
+	details.add_child(domain_box)
 	var domain_header := Label.new()
 	domain_header.name = "DomainLabel"
 	domain_header.add_theme_font_size_override("font_size", 14)
 	domain_header.add_theme_color_override("font_color", Color("4f5560"))
-	details.add_child(domain_header)
+	domain_box.add_child(domain_header)
 	var domain_slider := DualRangeSlider.new()
 	domain_slider.set_range_limits(_domain_min, _domain_max, DOMAIN_STEP)
 	domain_slider.set_values(formula.domain.x, formula.domain.y)
-	details.add_child(domain_slider)
+	domain_box.add_child(domain_slider)
 	var domain_row := HBoxContainer.new()
 	domain_row.add_theme_constant_override("separation", 8)
-	details.add_child(domain_row)
+	domain_box.add_child(domain_row)
 	var from_label := Label.new()
 	from_label.text = "x 从"
 	from_label.add_theme_font_size_override("font_size", 13)
@@ -335,6 +388,7 @@ func _build_entry(index: int) -> Dictionary:
 		"remove_button": remove_button,
 		"fields": fields,
 		"domain_slider": domain_slider,
+		"domain_box": domain_box,
 		"domain_label": domain_header,
 		"min_spin": min_spin,
 		"max_spin": max_spin,
@@ -455,12 +509,56 @@ func _make_formula(next_template: String, values: Dictionary, domain: Vector2) -
 	return {"template": next_template, "parameters": values.duplicate(true), "domain": _clamp_domain(domain.x, domain.y)}
 
 func _default_parameters(next_template: String) -> Dictionary:
+	if _template_defaults.has(next_template):
+		return _template_defaults[next_template].duplicate(true)
 	if _initial_parameters.has(next_template):
 		return _initial_parameters[next_template].duplicate(true)
 	var values: Dictionary = {}
 	for spec in Catalog.TEMPLATES[next_template].parameters:
 		values[spec.key] = float(spec.min)
 	return values
+
+func _offset_new_curve(next_template: String, base: Dictionary) -> Dictionary:
+	var vertical_key := ""
+	match next_template:
+		"linear":
+			vertical_key = "b"
+		"quadratic", "sine":
+			vertical_key = "k"
+		_:
+			return base
+	if not base.has(vertical_key):
+		return base
+	var spec := {}
+	for item in Catalog.TEMPLATES[next_template].parameters:
+		if item.key == vertical_key:
+			spec = item
+			break
+	if spec.is_empty():
+		return base
+	var original := float(base[vertical_key])
+	for offset in [1.0, -1.0, 2.0, -2.0, 3.0, -3.0, 4.0, -4.0]:
+		var candidate_value := snappedf(original + offset, float(spec.step))
+		if candidate_value < float(spec.min) or candidate_value > float(spec.max):
+			continue
+		var candidate := base.duplicate(true)
+		candidate[vertical_key] = candidate_value
+		if not _has_matching_curve(next_template, candidate):
+			return candidate
+	return base
+
+func _has_matching_curve(next_template: String, candidate: Dictionary) -> bool:
+	for formula in formulas:
+		if formula.template != next_template:
+			continue
+		var same := true
+		for key in candidate:
+			if not formula.parameters.has(key) or not is_equal_approx(float(formula.parameters[key]), float(candidate[key])):
+				same = false
+				break
+		if same:
+			return true
+	return false
 
 func _as_domain(value: Variant) -> Vector2:
 	if value is Vector2:

@@ -23,8 +23,13 @@ func _run() -> void:
 	var ui = load("res://scenes/main.tscn").instantiate()
 	root.add_child(ui)
 	await process_frame
-	ui.unlocked_level = 3
-	check(ui.load_level(1), "Load bounce level")
+	ui.unlocked_level = ui.levels.size() - 1
+	var bounce_index := 0
+	for index in ui.levels.size():
+		if ui.levels[index].id == "quiet_valley":
+			bounce_index = index
+			break
+	check(ui.load_level(bounce_index), "Load bounce level")
 	await process_frame
 
 	var adapter = ui.adapter
@@ -32,7 +37,7 @@ func _run() -> void:
 	check(builder.get_child_count() == 0, "Editing preview has no physics bodies")
 	var initial_preview_count: int = builder.preview_rebuild_count
 	var initial_flush_count: int = adapter.formula_flush_count
-	var reference: Array = ui.levels[1].reference_formulas.duplicate(true)
+	var reference: Array = ui.levels[bounce_index].reference_formulas.duplicate(true)
 	for index in 80:
 		var candidate: Array = reference.duplicate(true)
 		candidate[0].parameters.a = 0.04 if index % 2 == 0 else 0.05

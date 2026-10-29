@@ -4,10 +4,12 @@ signal view_changed(zoom: float)
 signal cursor_moved(world_position: Vector2)
 
 const INK := Color("30343b")
-const MUTED := Color("8a8d94")
-const BLUE := Color("4968b5")
-const GREEN := Color("187a6b")
-const GOLD := Color("d99a36")
+const MUTED := Color("7f8793")
+const BLUE := Color("4169b2")
+const GREEN := Color("157765")
+const GOLD := Color("d4932f")
+const DANGER := Color("c45750")
+const DANGER_FILL := Color("fff2f0")
 
 var level: Dictionary = {}
 var bounds := Rect2(-9, -4, 20, 12)
@@ -82,6 +84,10 @@ func world_to_screen(point: Vector2) -> Vector2:
 	var relative := point - center
 	return size * 0.5 + Vector2(relative.x, -relative.y) * _scale()
 
+func world_rect_to_global(rect: Rect2) -> Rect2:
+	var local := Rect2(world_to_screen(Vector2(rect.position.x, rect.end.y)), rect.size * _scale())
+	return Rect2(get_global_rect().position + local.position, local.size)
+
 func screen_to_world(point: Vector2) -> Vector2:
 	var relative := (point - size * 0.5) / _scale()
 	return center + Vector2(relative.x, -relative.y)
@@ -140,50 +146,142 @@ func _draw() -> void:
 	if level.is_empty():
 		return
 	for obstacle in level.obstacles:
-		var screen_rect := Rect2(world_to_screen(Vector2(obstacle.position.x, obstacle.end.y)), obstacle.size * _scale())
-		draw_rect(screen_rect, Color("fce9e7"))
-		draw_rect(screen_rect, Color("d97870"), false, 1.5)
-		if screen_rect.size.x > 60 and screen_rect.size.y > 30:
-			_text(screen_rect.get_center() + Vector2(-14, 5), "障碍", Color("bb6a64"), 13)
+		_draw_obstacle(obstacle)
 	for hazard in level.get("circle_hazards", []):
-		var point := world_to_screen(Vector2(hazard[0], hazard[1]))
-		draw_circle(point, float(hazard[2]) * _scale(), Color("fce9e7"))
-		draw_arc(point, float(hazard[2]) * _scale(), 0, TAU, 48, Color("d97870"), 1.5, true)
+		_draw_circle_hazard(hazard)
 	_draw_curves(_history, Color(0.55, 0.62, 0.71, 0.32), 2.0)
-	_draw_curves(_segments, BLUE, GameConstants.TRACK_HALF_THICKNESS * 2 * _scale())
-	if _trail.size() > 1:
-		_draw_curves([_trail], Color(0.18, 0.35, 0.65, 0.28), 5.0)
+	_draw_curves(_segments, BLUE, GameConstants.TRACK_HALF_THICKNESS * 2 * _scale(), true)
+	_draw_ball_trail()
 	for i in range(level.checkpoints.size()):
-		var point: Vector2 = world_to_screen(level.checkpoints[i])
-		var done: bool = i < _reached.size() and _reached[i]
-		var color: Color = GREEN if done else GOLD
-		var radius := float(level.checkpoint_radius) * _scale()
-		draw_circle(point, radius + 5, Color(color, 0.08))
-		draw_circle(point, radius - 1, Color.WHITE)
-		draw_arc(point, radius, 0, TAU, 40, color, 2.0, true)
-		if done:
-			_text(point + Vector2(-4, 5), "✓", color, 13)
-	var start: Vector2 = world_to_screen(level.start)
-	draw_circle(start, 13, Color(GREEN, 0.09))
-	draw_arc(start, 10, 0, TAU, 40, GREEN, 2, true)
-	_text(start + Vector2(-17, -21), "起点", GREEN, 14)
-	_text(start + Vector2(-32, 34), "(%.1f, %.1f)" % [level.start.x, level.start.y], MUTED, 12)
-	var goal: Vector2 = world_to_screen(level.goal)
-	var goal_radius: float = float(level.goal_radius) * _scale()
-	draw_circle(goal, goal_radius + 5, Color(GREEN, 0.08))
-	draw_arc(goal, goal_radius, 0, TAU, 48, GREEN, 2.2, true)
-	draw_line(goal + Vector2(-3, 7), goal + Vector2(-3, -8), GREEN, 2, true)
-	draw_colored_polygon(PackedVector2Array([goal + Vector2(-2, -8), goal + Vector2(8, -4), goal + Vector2(-2, 0)]), GREEN)
-	_text(goal + Vector2(-17, -goal_radius - 13), "终点", GREEN, 14)
-	_text(goal + Vector2(-32, goal_radius + 21), "(%.1f, %.1f)" % [level.goal.x, level.goal.y], MUTED, 12)
-	var ball_screen := world_to_screen(_ball)
-	var ball_radius := float(level.ball_radius) * _scale()
-	draw_circle(ball_screen + Vector2(0, 3), ball_radius + 2, Color(0.13, 0.2, 0.3, 0.1))
-	draw_circle(ball_screen, ball_radius + 2.0, Color.WHITE)
-	draw_circle(ball_screen, ball_radius, INK)
-	draw_circle(ball_screen + Vector2(-ball_radius * 0.25, -ball_radius * 0.25), ball_radius * 0.24, Color("a6bfdc"))
+		_draw_checkpoint(i)
+	_draw_start()
+	_draw_goal()
+	_draw_ball()
 
-func _draw_curves(segments: Array, color: Color, width: float) -> void:
+func _draw_obstacle(obstacle: Rect2) -> void:
+	var screen_rect := Rect2(world_to_screen(Vector2(obstacle.position.x, obstacle.end.y)), obstacle.size * _scale())
+	if screen_rect.size.x < 1.0 or screen_rect.size.y < 1.0:
+		return
+	draw_rect(screen_rect, DANGER_FILL)
+	_draw_diagonal_hatching(screen_rect)
+	draw_rect(screen_rect, DANGER, false, 1.5, true)
+	if screen_rect.size.x >= 48.0 and screen_rect.size.y >= 34.0:
+		_draw_warning_icon(screen_rect.get_center(), 9.0)
+		_draw_pill_label(screen_rect.position + Vector2(screen_rect.size.x * 0.5, -13), "障碍", DANGER, Color("fff8f7"), 11)
+
+func _draw_diagonal_hatching(rect: Rect2) -> void:
+	var step := 12.0
+	var first := int(ceil((rect.position.x + rect.position.y) / step))
+	var last := int(floor((rect.end.x + rect.end.y) / step))
+	for index in range(first, last + 1):
+		var diagonal := index * step
+		var x_a := clampf(diagonal - rect.end.y, rect.position.x, rect.end.x)
+		var y_a := diagonal - x_a
+		var x_b := clampf(diagonal - rect.position.y, rect.position.x, rect.end.x)
+		var y_b := diagonal - x_b
+		draw_line(Vector2(x_a, y_a), Vector2(x_b, y_b), Color(DANGER, 0.12), 1.0, true)
+
+func _draw_circle_hazard(hazard: Array) -> void:
+	var point := world_to_screen(Vector2(hazard[0], hazard[1]))
+	var radius := float(hazard[2]) * _scale()
+	if radius < 1.0:
+		return
+	draw_circle(point, radius + 4.0, Color(DANGER, 0.055))
+	draw_circle(point, radius, DANGER_FILL)
+	draw_arc(point, radius, 0, TAU, 48, DANGER, 1.7, true)
+	draw_arc(point, maxf(2.0, radius - 5.0), 0, TAU, 40, Color(DANGER, 0.24), 1.0, true)
+	_draw_warning_icon(point, minf(9.0, radius * 0.34))
+	_draw_pill_label(point + Vector2(0, -radius - 14), "危险区", DANGER, Color("fff8f7"), 11)
+
+func _draw_warning_icon(anchor: Vector2, icon_size: float) -> void:
+	draw_circle(anchor, icon_size + 3.0, Color.WHITE)
+	draw_arc(anchor, icon_size + 2.0, 0, TAU, 24, Color(DANGER, 0.45), 1.0, true)
+	var triangle := PackedVector2Array([
+		anchor + Vector2(0, -icon_size),
+		anchor + Vector2(icon_size * 0.9, icon_size * 0.72),
+		anchor + Vector2(-icon_size * 0.9, icon_size * 0.72),
+	])
+	draw_colored_polygon(triangle, DANGER)
+	_centered_text(anchor + Vector2(0, icon_size * 0.16), "!", Color.WHITE, maxi(9, int(icon_size * 1.15)))
+
+func _draw_checkpoint(index: int) -> void:
+	var point := world_to_screen(level.checkpoints[index])
+	var done: bool = index < _reached.size() and _reached[index]
+	var color: Color = GREEN if done else GOLD
+	var radius := float(level.checkpoint_radius) * _scale()
+	draw_circle(point, radius + 7.0, Color(color, 0.06))
+	draw_circle(point, radius + 2.0, Color.WHITE)
+	draw_circle(point, maxf(1.0, radius - 3.0), Color(color, 0.09))
+	draw_arc(point, radius, 0, TAU, 48, color, 2.2, true)
+	draw_arc(point, maxf(1.0, radius - 5.0), 0, TAU, 36, Color(color, 0.26), 1.0, true)
+	if done:
+		_centered_text(point, "✓", color, maxi(11, int(radius * 0.8)))
+	else:
+		_centered_text(point, str(index + 1), color, maxi(10, int(radius * 0.72)))
+
+func _draw_start() -> void:
+	var point := world_to_screen(level.start)
+	draw_circle(point, 14.0, Color(GREEN, 0.07))
+	draw_circle(point, 12.0, Color.WHITE)
+	draw_circle(point, 9.0, Color(GREEN, 0.08))
+	draw_arc(point, 11.5, 0, TAU, 40, GREEN, 2.0, true)
+	draw_circle(point, 3.5, GREEN)
+	_draw_pill_label(point + Vector2(0, -23), "起点", GREEN, Color("f3fbf8"), 12)
+	_text(point + Vector2(-31, 33), "(%.1f, %.1f)" % [level.start.x, level.start.y], MUTED, 12)
+
+func _draw_goal() -> void:
+	var point := world_to_screen(level.goal)
+	var radius: float = float(level.goal_radius) * _scale()
+	draw_circle(point, radius + 10.0, Color(GREEN, 0.055))
+	draw_circle(point, radius + 2.0, Color.WHITE)
+	draw_circle(point, maxf(1.0, radius - 4.0), Color(GREEN, 0.055))
+	draw_arc(point, radius, 0, TAU, 48, GREEN, 2.4, true)
+	draw_arc(point, maxf(2.0, radius * 0.66), 0, TAU, 40, Color(GREEN, 0.48), 1.2, true)
+	draw_line(point + Vector2(-3, 8), point + Vector2(-3, -9), GREEN, 2.2, true)
+	draw_colored_polygon(PackedVector2Array([
+		point + Vector2(-2, -9),
+		point + Vector2(8, -4.5),
+		point + Vector2(-2, 0),
+	]), GREEN)
+	_draw_pill_label(point + Vector2(0, -radius - 15), "终点", GREEN, Color("f3fbf8"), 12)
+	_text(point + Vector2(-31, radius + 30), "(%.1f, %.1f)" % [level.goal.x, level.goal.y], MUTED, 12)
+
+func _draw_ball() -> void:
+	var point := world_to_screen(_ball)
+	var radius: float = maxf(4.0, float(level.ball_radius) * _scale())
+	draw_circle(point + Vector2(0, 4), radius + 3.0, Color(0.13, 0.2, 0.3, 0.12))
+	draw_circle(point, radius + 2.5, Color.WHITE)
+	draw_circle(point, radius + 1.2, Color("17345c"))
+	draw_circle(point, radius, Color("2f6fd0"))
+	draw_circle(point + Vector2(-radius * 0.12, -radius * 0.16), radius * 0.72, Color("5b9af0"))
+	draw_arc(point, radius * 0.82, deg_to_rad(28), deg_to_rad(148), 20, Color(1, 1, 1, 0.24), 1.2, true)
+	draw_circle(point + Vector2(-radius * 0.34, -radius * 0.4), radius * 0.2, Color(1, 1, 1, 0.92))
+	draw_circle(point + Vector2(radius * 0.34, radius * 0.28), radius * 0.09, Color(1, 1, 1, 0.35))
+
+func _draw_ball_trail() -> void:
+	if _trail.size() < 2:
+		return
+	var stride := maxi(1, int(ceil(float(_trail.size()) / 120.0)))
+	var previous := world_to_screen(_trail[0])
+	for index in range(stride, _trail.size(), stride):
+		var next := world_to_screen(_trail[index])
+		var amount := float(index) / float(_trail.size() - 1)
+		draw_line(previous, next, Color(0.24, 0.46, 0.84, 0.025 + amount * 0.115), 1.0 + amount * 4.5, true)
+		previous = next
+
+func _draw_pill_label(anchor: Vector2, value: String, color: Color, background: Color, font_size: int) -> void:
+	var font := get_theme_default_font()
+	var text_size := font.get_string_size(value, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+	var rect := Rect2(anchor - Vector2(text_size.x * 0.5 + 7.0, text_size.y * 0.5 + 4.0), Vector2(text_size.x + 14.0, text_size.y + 8.0))
+	var style := StyleBoxFlat.new()
+	style.bg_color = background
+	style.border_color = Color(color, 0.22)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(int(rect.size.y * 0.5))
+	draw_style_box(style, rect)
+	_centered_text(anchor, value, color, font_size)
+
+func _draw_curves(segments: Array, color: Color, width: float, decorated: bool = false) -> void:
 	var points := PackedVector2Array()
 	var run_color := color
 	var run_key := ""
@@ -202,13 +300,13 @@ func _draw_curves(segments: Array, color: Color, width: float) -> void:
 			elif key == run_key and actual_color == run_color and last_end.distance_squared_to(from) <= 0.01:
 				points.append(to)
 			else:
-				_flush_curve(points, run_color, width)
+				_flush_curve(points, run_color, width, decorated)
 				points = PackedVector2Array([from, to])
 				run_color = actual_color
 				run_key = key
 			last_end = to
 			continue
-		_flush_curve(points, run_color, width)
+		_flush_curve(points, run_color, width, decorated)
 		points = PackedVector2Array()
 		if segment.size() < 2:
 			continue
@@ -232,15 +330,24 @@ func _draw_curves(segments: Array, color: Color, width: float) -> void:
 		if screen_points.size() > 1:
 			draw_polyline(screen_points, color, width, true)
 	if points.size() > 1:
-		_flush_curve(points, run_color, width)
+		_flush_curve(points, run_color, width, decorated)
 
-func _flush_curve(points: PackedVector2Array, color: Color, width: float) -> void:
+func _flush_curve(points: PackedVector2Array, color: Color, width: float, decorated: bool = false) -> void:
 	if points.size() < 2:
 		return
+	if decorated:
+		var glow := Color(color, 0.10)
+		draw_polyline(points, glow, width + 6.0, true)
+		draw_circle(points[0], (width + 6.0) * 0.5, glow)
+		draw_circle(points[-1], (width + 6.0) * 0.5, glow)
 	draw_polyline(points, color, width, true)
 	# Capsules use round ends; keep the silhouette without per-segment circles.
 	draw_circle(points[0], width * 0.5, color)
 	draw_circle(points[-1], width * 0.5, color)
+	if decorated:
+		var sheen := Color(color.lightened(0.42), 0.44)
+		var sheen_width := maxf(1.0, width * 0.16)
+		draw_polyline(points, sheen, sheen_width, true)
 
 func clip_segment_to_bounds(from: Vector2, to: Vector2) -> PackedVector2Array:
 	var delta := to - from
@@ -301,3 +408,9 @@ func _number(value: float) -> String:
 
 func _text(at: Vector2, value: String, color: Color, font_size: int) -> void:
 	draw_string(get_theme_default_font(), at, value, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
+
+func _centered_text(anchor: Vector2, value: String, color: Color, font_size: int) -> void:
+	var font := get_theme_default_font()
+	var text_size := font.get_string_size(value, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+	var baseline := anchor.y + (font.get_ascent(font_size) - font.get_descent(font_size)) * 0.5
+	draw_string(font, Vector2(anchor.x - text_size.x * 0.5, baseline), value, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)

@@ -20,7 +20,10 @@ func _run() -> void:
 	check(not Repository.validate_document(broken).is_empty(), "Malformed parameters rejected")
 	check(not Repository.validate_document({"schema_version": 99}).is_empty(), "Unknown schema rejected")
 	var levels := LevelData.all_levels()
-	check(levels.size() == 4, "Four final levels")
+	check(levels.size() == 7, "Seven progressive levels")
+	check(document.levels[0].max_formulas == 1 and not bool(document.levels[0].tutorial.features.add_formula), "Tutorial one hides add")
+	check(bool(document.levels[1].tutorial.features.add_formula) and not bool(document.levels[1].tutorial.features.template_picker), "Tutorial two unlocks add only")
+	check(bool(document.levels[2].tutorial.features.template_picker) and document.levels[2].templates.size() == 2, "Tutorial three unlocks templates")
 	for level in levels:
 		check(LevelData.validate(level).ok, "Level validation: " + level.id)
 		for formula in level.formulas:
@@ -30,8 +33,9 @@ func _run() -> void:
 				check(BoundaryClipper.point_inside(segment.a, level.boundary) and BoundaryClipper.point_inside(segment.b, level.boundary), "Clipped segment")
 	var q := {"template": "quadratic", "parameters": {"a": 0.2, "h": 4.0, "k": 5.0}, "domain": Vector2(-8, 8)}
 	var core := Catalog.to_core(q)
+	var concept_level: Dictionary = levels.filter(func(level): return level.id == "quiet_valley")[0]
 	check(is_equal_approx(core.parameters.b, -1.6) and is_equal_approx(core.parameters.c, 8.2), "Vertex conversion")
-	check(FormulaValidator.validate([core], levels[1]).ok, "Converted coefficients use numerical safety")
+	check(FormulaValidator.validate([core], concept_level).ok, "Converted coefficients use numerical safety")
 	for x in [-4.0, 0.0, 3.0]:
 		check(is_equal_approx(FunctionEvaluator.evaluate(core, x), Catalog.evaluate("quadratic", q.parameters, x)), "Equivalent evaluation")
 	q.parameters.a = 0.0
@@ -39,14 +43,14 @@ func _run() -> void:
 	check(core.ui_source.parameters.h == 4.0 and is_equal_approx(FunctionEvaluator.evaluate(core, 2), 5), "a=0 preserves vertex parameters")
 	var sine := Catalog.to_core({"template": "sine", "parameters": {"a": 2.0, "b": 0.3, "h": -4.0, "k": 0.0}, "domain": Vector2(-4, 12)})
 	check(is_equal_approx(FunctionEvaluator.evaluate(sine, 1), 2 * sin(1.5)), "Sine evaluation")
-	check(not FormulaValidator.validate([core, core, core, core], levels[1]).ok, "Core enforces three formulas")
+	check(not FormulaValidator.validate([core, core, core, core], concept_level).ok, "Core enforces three formulas")
 	var invalid := core.duplicate(true)
 	invalid.x_range = "bad"
 	invalid.erase("ui_source")
-	check(not FormulaValidator.validate([invalid], levels[1]).ok, "Malformed domain rejected")
+	check(not FormulaValidator.validate([invalid], concept_level).ok, "Malformed domain rejected")
 	invalid = core.duplicate(true)
 	invalid.ui_source = "bad"
-	check(not FormulaValidator.validate([invalid], levels[1]).ok, "Malformed source rejected")
+	check(not FormulaValidator.validate([invalid], concept_level).ok, "Malformed source rejected")
 	check(is_equal_approx(FormulaGameWorld.circle_contact(Vector2(-5,0), Vector2(5,0), Vector2.ZERO, 1), 0.4), "Fast swept circle")
 	check(not is_finite(FormulaGameWorld.rect_contact(Vector2(-0.9,-0.9), Vector2(-0.8,-0.8), Rect2(0,0,2,2), 1)), "Rounded rectangle avoids false positive")
 	check(is_finite(FormulaGameWorld.rect_contact(Vector2(-2,1), Vector2(4,1), Rect2(0,0,2,2), 0.28)), "Fast swept rectangle")

@@ -60,14 +60,14 @@ static func create() -> Theme:
 		theme.set_stylebox("pressed", type, panel(Color("e8edf8"), 3, Color("aab9dc")))
 		theme.set_stylebox("disabled", type, panel(Color("fafafa"), 3, LINE))
 		theme.set_stylebox("focus", type, panel(Color(0, 0, 0, 0), 3, ACCENT))
-		for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
+		for state in ["font_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color", "font_focus_color"]:
 			theme.set_color(state, type, INK)
 		theme.set_color("font_disabled_color", type, Color("b3b6bc"))
 	theme.set_type_variation("PrimaryButton", "Button")
 	for state in ["normal", "hover", "pressed"]:
 		var color := ACCENT if state == "normal" else Color("3d5ca7")
 		theme.set_stylebox(state, "PrimaryButton", panel(color, 3, color))
-	for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
+	for state in ["font_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color", "font_focus_color"]:
 		theme.set_color(state, "PrimaryButton", Color.WHITE)
 	for variation in ["NavButton", "ToolButton"]:
 		theme.set_type_variation(variation, "Button")
@@ -110,9 +110,12 @@ static func create() -> Theme:
 				bar.set_corner_radius_all(3)
 			theme.set_stylebox(state, type, bar)
 	theme.set_stylebox("panel", "PopupMenu", panel())
-	theme.set_stylebox("hover", "PopupMenu", flat(Color("eef1f8")))
+	var popup_hover := flat(Color("e4ebfa"))
+	popup_hover.set_corner_radius_all(3)
+	theme.set_stylebox("hover", "PopupMenu", popup_hover)
 	theme.set_color("font_color", "PopupMenu", INK)
-	theme.set_color("font_hover_color", "PopupMenu", ACCENT)
+	theme.set_color("font_hover_color", "PopupMenu", Color("274b8f"))
+	theme.set_color("font_disabled_color", "PopupMenu", Color("9aa0aa"))
 	theme.set_color("font_color", "TooltipLabel", Color.WHITE)
 	theme.set_font_size("font_size", "TooltipLabel", 13)
 	theme.set_stylebox("panel", "TooltipPanel", panel(Color("42464e"), 3, Color("42464e")))

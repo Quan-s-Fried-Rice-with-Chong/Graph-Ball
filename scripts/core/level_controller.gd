@@ -11,6 +11,7 @@ signal editing_lock_changed(locked: bool)
 signal status_changed(status: String)
 
 enum RunState { EDITING, RUNNING, PAUSED, SUCCESS, FAILED }
+const SUCCESS_DELAY := 1.0
 
 var current_level_index := 0
 var current_level: Dictionary = {}
@@ -21,6 +22,8 @@ var time_left := 0.0
 var failure_reason := ""
 var save_enabled := true
 var last_save_ok := true
+var success_pending := false
+var _success_delay_remaining := 0.0
 
 @onready var game_world: FormulaGameWorld = $GameWorld
 
@@ -33,6 +36,11 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	if state != RunState.RUNNING:
+		return
+	if success_pending:
+		_success_delay_remaining -= delta
+		if _success_delay_remaining <= 0.0:
+			finish_run(true, "通关")
 		return
 	elapsed_time += delta
 	time_left = maxf(0.0, float(current_level.get("time_limit", 0.0)) - elapsed_time)
@@ -58,6 +66,8 @@ func configure_level(candidate: Dictionary, build_colliders: bool = true) -> boo
 	elapsed_time = 0.0
 	time_left = float(current_level["time_limit"])
 	failure_reason = ""
+	success_pending = false
+	_success_delay_remaining = 0.0
 	game_world.configure_level(current_level, formulas, build_colliders)
 	level_loaded.emit(current_level.duplicate(true))
 	formula_list_changed.emit(formulas.duplicate(true))
@@ -138,6 +148,8 @@ func start_run() -> bool:
 	elapsed_time = 0.0
 	time_left = float(current_level["time_limit"])
 	failure_reason = ""
+	success_pending = false
+	_success_delay_remaining = 0.0
 	game_world.rebuild_tracks(formulas)
 	game_world.start_simulation()
 	status_changed.emit(status_name())
@@ -149,6 +161,8 @@ func reset_run() -> void:
 	elapsed_time = 0.0
 	time_left = float(current_level.get("time_limit", 0.0))
 	failure_reason = ""
+	success_pending = false
+	_success_delay_remaining = 0.0
 	game_world.reset_ball()
 	status_changed.emit(status_name())
 	editing_lock_changed.emit(false)
@@ -169,7 +183,10 @@ func finish_run(success: bool, reason: String) -> void:
 		return
 	state = RunState.SUCCESS if success else RunState.FAILED
 	failure_reason = reason
-	game_world.stop_simulation()
+	success_pending = false
+	_success_delay_remaining = 0.0
+	if not success:
+		game_world.stop_simulation()
 	if success:
 		last_save_ok = SaveManager.mark_level_completed(String(current_level.get("id", "")), elapsed_time, formulas.size()) if save_enabled else true
 	status_changed.emit(status_name())
@@ -195,9 +212,14 @@ func _on_checkpoint_reached(_index: int) -> void:
 	pass
 
 func _on_goal_reached() -> void:
-	finish_run(true, "通关")
+	if state != RunState.RUNNING or success_pending:
+		return
+	success_pending = true
+	_success_delay_remaining = SUCCESS_DELAY
 
 func _on_world_failed(reason: String) -> void:
+	if success_pending or state != RunState.RUNNING and state != RunState.PAUSED:
+		return
 	finish_run(false, reason)
 
 func _on_ball_state_changed(position_value: Vector2, velocity: Vector2) -> void:

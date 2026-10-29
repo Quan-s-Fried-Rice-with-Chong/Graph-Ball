@@ -21,19 +21,22 @@ func _ready() -> void:
 func _draw() -> void:
 	var center_x := size.x * 0.5
 	var circle_color := Color("b9c3d2") if locked else Color("4968b5")
-	draw_circle(Vector2(center_x, 55), 29, circle_color)
-	_centered("%02d" % (level_index + 1), 64, 24, Color("515d71") if locked else Color.WHITE)
-	_centered(level_title, 119, 19, Color("606b7e") if locked else Color("30343b"))
-	_centered(concept, 148, 14, Color("7b8595"))
+	var circle_y := size.y * 0.24
+	var circle_radius := minf(29.0, size.y * 0.128)
+	draw_circle(Vector2(center_x, circle_y), circle_radius, circle_color)
+	_centered("%02d" % (level_index + 1), circle_y + 9, minf(24.0, size.y * 0.106), Color("515d71") if locked else Color.WHITE)
+	_centered(level_title, size.y * 0.53, 19, Color("606b7e") if locked else Color("30343b"))
+	_centered(concept, size.y * 0.66, 14, Color("7b8595"))
 	if locked:
-		var at := Vector2(center_x - 36, 179)
+		var at := Vector2(center_x - 36, size.y * 0.79)
 		draw_rect(Rect2(at, Vector2(10, 9)), Color("717d91"), false, 1.3)
 		draw_arc(at + Vector2(5, 0), 4, PI, TAU, 16, Color("717d91"), 1.3, true)
-		_centered("未解锁", 188, 14, Color("717d91"), 9)
+		_centered("未解锁", size.y * 0.84, 14, Color("717d91"), 9)
 	else:
-		_centered("已通关" if completed else "可挑战", 188, 14, Color("278776") if completed else circle_color)
+		_centered("已通关" if completed else "可挑战", size.y * 0.84, 14, Color("278776") if completed else circle_color)
 
-func _centered(value: String, baseline: float, font_size: int, color: Color, offset: float = 0) -> void:
+func _centered(value: String, baseline: float, font_size: float, color: Color, offset: float = 0) -> void:
 	var font := get_theme_default_font()
-	var width := font.get_string_size(value, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
-	draw_string(font, Vector2((size.x - width) * 0.5 + offset, baseline), value, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
+	var size_px := int(font_size)
+	var width := font.get_string_size(value, HORIZONTAL_ALIGNMENT_LEFT, -1, size_px).x
+	draw_string(font, Vector2((size.x - width) * 0.5 + offset, baseline), value, HORIZONTAL_ALIGNMENT_LEFT, -1, size_px, color)

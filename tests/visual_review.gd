@@ -22,9 +22,9 @@ func _run() -> void:
 	await _capture("menu-1440")
 	ui.open_levels()
 	await _capture("levels-1440")
-	ui.unlocked_level = 3
-	ui.load_level(3)
-	ui.formula_panel.set_formulas(ui.levels[3].reference_formulas)
+	ui.unlocked_level = ui.levels.size() - 1
+	ui.load_level(4)
+	ui.formula_panel.set_formulas(ui.levels[4].reference_formulas)
 	await _capture("game-1440")
 	ui.open_help()
 	await _capture("help-1440")
@@ -33,7 +33,7 @@ func _run() -> void:
 		"record": {"best_time": 12.9, "best_formula_count": 2}}, false)
 	await _capture("result-1440")
 	ui.result_dialog.hide()
-	ui.load_level(2)
+	ui.load_level(3)
 	root.size = Vector2i(1100, 720)
 	await _capture("game-1100")
 	ui.queue_free()
