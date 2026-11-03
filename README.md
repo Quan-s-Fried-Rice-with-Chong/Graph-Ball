@@ -12,6 +12,16 @@
 godot --path .
 ```
 
+## 导出试玩包
+
+项目已配置 `Windows Desktop` 导出预设，产物写入 `build/windows/数维弹球.exe`，并嵌入 PCK，可单文件分发。首次导出前需在 Godot 中安装对应的 4.7.2 导出模板；安装后可通过编辑器“项目 → 导出”生成，或在项目目录执行：
+
+```text
+godot --headless --path . --export-release "Windows Desktop" build/windows/数维弹球.exe
+```
+
+面向玩家分发时建议连同操作说明与反馈方式一起压缩。当前 Windows 构建未做代码签名，SmartScreen 可能提示“未知发布者”，需在说明中告知玩家如何继续运行。Web 导出尚未完成兼容性与物理一致性验收，不纳入当前试玩包。
+
 ## 操作与规则
 
 - 教程关按进度逐步开放函数添加、模板选择等功能；正式关卡最多三条轨道，轨道同时参与碰撞。
