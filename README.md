@@ -2,6 +2,14 @@
 
 把数学函数变成真实轨道，让小球收集全部检查点后到达终点。最终合并版采用 A 的重力、刚体与碰撞，结合 B 的主菜单、选关、公式卡和数学画布美术。界面统一为深色实验台视觉，并使用石墨、青绿与珊瑚三色建立操作、通过和危险语义。
 
+## 下载试玩
+
+Windows 10/11（64 位）玩家无需安装 Godot，直接下载并解压即可游玩：
+
+**[下载 Windows 试玩版](https://github.com/Quan-s-Fried-Rice-with-Chong/Graph-Ball/releases/latest/download/GraphBall_v1.0.0_Windows.zip)**
+
+解压后双击 `数维弹球.exe`。若 Windows SmartScreen 提示“未知发布者”，选择“更多信息 → 仍要运行”。请下载 release 中的游戏包，不要下载自动生成的 `Source code (zip/tar.gz)`。
+
 ## 启动
 
 使用 Godot 4.7.2 导入本目录的 `project.godot`，按 F5 运行工程。启动场景为 `scenes/main.tscn`。
