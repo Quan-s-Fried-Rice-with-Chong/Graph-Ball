@@ -140,19 +140,19 @@ func _position_card() -> void:
 	card.custom_minimum_size.x = width
 	card.reset_size()
 	var card_size := card.size
-	var position := Vector2((size.x - card_size.x) * 0.5, (size.y - card_size.y) * 0.5)
+	var card_position := Vector2((size.x - card_size.x) * 0.5, (size.y - card_size.y) * 0.5)
 	if _target_valid:
 		var gap := 18.0
 		if _target_rect.end.y + gap + card_size.y <= size.y - margin:
-			position.y = _target_rect.end.y + gap
+			card_position.y = _target_rect.end.y + gap
 		elif _target_rect.position.y - gap - card_size.y >= margin:
-			position.y = _target_rect.position.y - gap - card_size.y
+			card_position.y = _target_rect.position.y - gap - card_size.y
 		else:
-			position.y = _target_rect.get_center().y - card_size.y * 0.5
-		position.x = _target_rect.get_center().x - card_size.x * 0.5
-	position.x = clampf(position.x, margin, maxf(margin, size.x - card_size.x - margin))
-	position.y = clampf(position.y, margin, maxf(margin, size.y - card_size.y - margin))
-	card.position = position
+			card_position.y = _target_rect.get_center().y - card_size.y * 0.5
+		card_position.x = _target_rect.get_center().x - card_size.x * 0.5
+	card_position.x = clampf(card_position.x, margin, maxf(margin, size.x - card_size.x - margin))
+	card_position.y = clampf(card_position.y, margin, maxf(margin, size.y - card_size.y - margin))
+	card.position = card_position
 
 func _should_advance() -> bool:
 	if _index < 0 or _index >= _steps.size():

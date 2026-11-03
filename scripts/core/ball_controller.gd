@@ -27,11 +27,11 @@ func configure(scale_value: float, radius_world: float = GameConstants.BALL_RADI
 	_build_collision_shape()
 	queue_redraw()
 
-func reset_ball(screen_position: Vector2, world_velocity: Vector2 = Vector2.ZERO) -> void:
+func reset_ball(screen_position: Vector2, initial_world_velocity: Vector2 = Vector2.ZERO) -> void:
 	freeze = true
 	sleeping = false
 	position = screen_position
-	linear_velocity = Vector2(world_velocity.x, -world_velocity.y) * world_scale
+	linear_velocity = Vector2(initial_world_velocity.x, -initial_world_velocity.y) * world_scale
 	angular_velocity = 0.0
 	rotation = 0.0
 	_paused_velocity = Vector2.ZERO

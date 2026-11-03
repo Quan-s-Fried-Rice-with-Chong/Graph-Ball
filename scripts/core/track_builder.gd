@@ -64,12 +64,12 @@ func _build_formula_body(formula: Dictionary, segments: Array) -> void:
 	body.collision_mask = 0
 	body.set_meta("formula_id", formula["id"])
 	body.set_meta("module_type", formula["type"])
-	var material := PhysicsMaterial.new()
-	material.bounce = float(segments[0]["restitution"])
-	material.friction = float(segments[0]["friction"])
-	material.absorbent = false
-	material.rough = true
-	body.physics_material_override = material
+	var body_material := PhysicsMaterial.new()
+	body_material.bounce = float(segments[0]["restitution"])
+	body_material.friction = float(segments[0]["friction"])
+	body_material.absorbent = false
+	body_material.rough = true
+	body.physics_material_override = body_material
 	add_child(body)
 
 	var radius := GameConstants.TRACK_HALF_THICKNESS * world_scale
